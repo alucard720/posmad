@@ -1,20 +1,18 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { useNavigate } from "react-router-dom"
-import { authenticateUser, createUser, type User, type UserRole} from "../services/user-service"
+import { type User, type UserRole } from "../types/User"
+import { loginAPI } from "../services/auth-service"
+import axios from "axios";
 
-// Update the UserRole type to include "owner"
 
-
-
-  
 
 type AuthContextType = {
   user: User | null
   isLoading: boolean
   isAuthenticated: boolean
   userRole: UserRole | null
-  login: (email: string, password: string) => Promise<boolean>
-  register: (fullname: string, email: string, password: string, role: UserRole, enabled: boolean) => Promise<boolean>
+  loginUser: (email: string, password: string) => void
+  //register: (name: string, email: string, password: string, role: UserRole, status: string) => Promise<boolean>
   logout: () => void
   hasPermission: (requiredRole: UserRole | UserRole[]) => boolean
 }
@@ -23,111 +21,114 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate()
 
   // Check if user is logged in on initial load
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const storedUser = localStorage.getItem("user")
-        if (storedUser) {
-          setUser(JSON.parse(storedUser))
-        } else {
-          // If no user in localStorage but auth-token cookie exists, create a default user
-          const authToken = document.cookie.includes("auth-token=authenticated")
-          const roleMatch = document.cookie.match(/user-role=([^;]+)/)
-          const role = roleMatch ? (roleMatch[1] as UserRole) : "cajero"
-
-          if (authToken) {
-            const defaultUser: User = {
-              id: `default-${Date.now()}`,
-              fullname: role === "administrador" ? "Admin User" : role === "propietario" ? "Owner User" : "Cashier User",
-              email: `${role}@example.com`,
-              role: role,
-              enabled: true,
-             
-            }
-
-            setUser(defaultUser)
-            localStorage.setItem("user", JSON.stringify(defaultUser))
-          }
-        }
-      } catch (error) {
-        console.error("Failed to restore auth state:", error)
-      } finally {
-        setIsLoading(false)
-      }
+    const user = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+    if (user && token) {
+      setUser(JSON.parse(user));
+      setToken(token);
+      axios.defaults.headers.common["Authorization"] = "Bearer " + token;
     }
+    setIsLoading(true);
+  }, []);
 
-    checkAuth()
-  }, [])
+  // const login = async (email: string, password: string): Promise<boolean> => {
+  //   try {
+  //     setIsLoading(true)
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  //     const apiUser = await authenticateUser(email, password)
+
+  //     if (apiUser) {
+  //       // Map API user to our User type
+  //       const loggedInUser: User = {
+  //         id: apiUser.id,
+  //         fullname: apiUser.fullname,
+  //         email: apiUser.email,
+  //         role: apiUser.role,
+  //         enabled: apiUser.enabled,
+  //         createdAt: apiUser.createdAt,
+  //       }
+
+  //       // Store user in localStorage
+  //       localStorage.setItem("user", JSON.stringify(loggedInUser))
+
+  //       // Store role in cookie for middleware
+  //       document.cookie = `user-role=${loggedInUser.role}; path=/; max-age=86400`
+
+  //       setUser(loggedInUser)
+  //       return true
+  //     }
+
+  //     return false
+  //   } catch (error) {
+  //     console.error("Login failed:", error)
+  //     return false
+  //   } finally {
+  //     setIsLoading(false)
+  //   }
+  // }
+
+  // const register = async (
+  //   fullname: string,
+  //   email: string,
+  //   password: string,
+  //   role: UserRole,
+  //   enabled: boolean,
+  // ): Promise<boolean> => {
+  //   try {
+  //     setIsLoading(true)
+
+  //     const newUser: Omit<User, "id"> = {
+  //       id:"",
+  //       fullname,
+  //       email,
+  //       password,
+  //       role,
+  //       enabled,
+  //     }
+
+  //     const createdUser = await createUser(newUser)
+  //     return !!createdUser
+  //   } catch (error) {
+  //     console.error("Registration failed:", error)
+  //     return false
+  //   } finally {
+  //     setIsLoading(false)
+  //   }
+  // }
+
+
+  const loginUser = async (email: string, password: string) => {
+   
     try {
-      setIsLoading(true)
+      const token = await loginAPI(email, password);
+      if (token) {
+        localStorage.setItem("token", token);
+        const userObj: User = {        
+          id: token.id, // Replace with actual user ID from API response
+          fullname: token.User_fullname,  // Replace with actual user name from API response
+          email: email,
+          password: "",
+          role: token.role,          
+          enabled: true,    // Replace with actual role from API response
+          createdAt:""
+        };
 
-      const apiUser = await authenticateUser(email, password)
-
-      if (apiUser) {
-        // Map API user to our User type with all properties
-        const loggedInUser: User = {
-          id: apiUser.id,
-          fullname: apiUser.fullname,
-          email: apiUser.email,
-          role: apiUser.role,
-          enabled: apiUser.enabled,
-         
-        }
-
-        // Store user in localStorage
-        localStorage.setItem("user", JSON.stringify(loggedInUser))
-
-        // Store role in cookie for middleware
-        document.cookie = `user-role=${loggedInUser.role}; path=/; max-age=86400`
-
-        setUser(loggedInUser)
-        return true
+        localStorage.setItem("user", JSON.stringify(userObj));       
+        setUser(userObj);
+        // toast.success("Login Exitoso")
+        navigate("/dashboard");
       }
-
-      return false
-    } catch (error) {
-      console.error("Login failed:", error)
-      return false
-    } finally {
-      setIsLoading(false)
+    } catch (e) {
+      console.error('Login error:', e);
+      
     }
-  }
-
-  const register = async (
-    fullname: string,
-    email: string,
-    password: string,
-    role: UserRole,
-    enabled: boolean,
-  ): Promise<boolean> => {
-    try {
-      setIsLoading(true)
-
-      const newUser: User = {
-        id: `default-${Date.now()}`,
-        fullname,
-        email,
-        password,
-        role,
-        enabled,
-        
-      }
-
-      const createdUser = await createUser(newUser)
-      return !!createdUser
-    } catch (error) {
-      console.error("Registration failed:", error)
-      return false
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  };
 
   const logout = () => {
     localStorage.removeItem("user")
@@ -155,13 +156,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isAuthenticated: !!user,
         userRole: user?.role || null,
-        login,
-        register,
+        loginUser,
         logout,
         hasPermission,
       }}
     >
-      {children}
+      {isLoading ? children : null}
     </AuthContext.Provider>
   )
 }
@@ -174,4 +174,3 @@ export function useAuth() {
   return context
 }
 
-export type { UserRole }

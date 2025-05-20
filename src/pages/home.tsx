@@ -1,6 +1,7 @@
 import { Header } from "../components/header"
 import { CartSidebar } from "../components/cart-sidebar"
-import { HomepageContent } from "../components/homepage-content"
+import { SearchBar } from "../components/search-bar"
+import { ProductGrid } from "../components/product-grid"
 
 export default function HomePage() {
   return (
@@ -8,7 +9,9 @@ export default function HomePage() {
       <Header title="Vender" />
       <div className="d-flex flex-grow-1 overflow-hidden">
         <div className="flex-grow-1 overflow-auto p-3">
-          <HomepageContent />
+          {/* <HomepageContent /> */}
+          <SearchBar />
+          <ProductGrid />
         </div>
         <CartSidebar />
       </div>

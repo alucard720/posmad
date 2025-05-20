@@ -1,46 +1,47 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useAuth, type UserRole } from "../contexts/auth-context"
 import { formatDate } from "../lib/utils"
+import type { User } from "../services/user-service"
+import { fetchUsers } from "../services/user-service"
 
 // Mock user data for demonstration
-const mockUsers = [
-  {
-    id: "1",
-    name: "Miguel Santana",
-    email: "miguel@example.com",
-    role: "propietario" as UserRole,
-    status: "Activo",
-    lastLogin: "2023-05-15T10:30:00Z",
-  },
-  {
-    id: "2",
-    name: "Ana Martínez",
-    email: "ana@example.com",
-    role: "administrador" as UserRole,
-    status: "Activo",
-    lastLogin: "2023-05-14T14:45:00Z",
-  },
-  {
-    id: "3",
-    name: "Carlos Rodríguez",
-    email: "carlos@example.com",
-    role: "cajero" as UserRole,
-    status: "Activo",
-    lastLogin: "2023-05-13T09:15:00Z",
-  },
-  {
-    id: "4",
-    name: "Laura Gómez",
-    email: "laura@example.com",
-    role: "administrador" as UserRole,
-    status: "Inactivo",
-    lastLogin: "2023-04-28T11:20:00Z",
-  },
-]
+// const mockUsers = [
+//   {
+//     id: "1",
+//     name: "Miguel Santana",
+//     email: "miguel@example.com",
+//     role: "propietario" as UserRole,
+//     status: "Activo",
+//     lastLogin: "2023-05-15T10:30:00Z",
+//   },
+//   {
+//     id: "2",
+//     name: "Ana Martínez",
+//     email: "ana@example.com",
+//     role: "administrador" as UserRole,
+//     status: "Activo",
+//     lastLogin: "2023-05-14T14:45:00Z",
+//   },
+//   {
+//     id: "3",
+//     name: "Carlos Rodríguez",
+//     email: "carlos@example.com",
+//     role: "cajero" as UserRole,
+//     status: "Activo",
+//     lastLogin: "2023-05-13T09:15:00Z",
+//   },
+//   {
+//     id: "4",
+//     name: "Laura Gómez",
+//     email: "laura@example.com",
+//     role: "administrador" as UserRole,
+//     status: "Inactivo",
+//     lastLogin: "2023-04-28T11:20:00Z",
+//   },
+// ]
 
 // Define permission levels for each role
 const rolePermissions = {
@@ -67,13 +68,10 @@ const rolePermissions = {
   },
 }
 
-interface UserManagementProps {
-  compact?: boolean;
-}
 
-export function UserManagement({ compact = false }: UserManagementProps) {
-  const [users, setUsers] = useState(mockUsers)
-  const [filteredUsers, setFilteredUsers] = useState(mockUsers)
+export function UserManagement() {
+  const [users, setUsers] = useState<User[]>([])
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState<UserRole | "all">("all")
   const [showModal, setShowModal] = useState(false)
@@ -81,20 +79,43 @@ export function UserManagement({ compact = false }: UserManagementProps) {
   const [error, setError] = useState<string | null>(null)
   const [currentUser, setCurrentUser] = useState<{
     id?: string
-    name: string
+    fullname: string
     email: string
     role: UserRole
     password: string
-    status: string
+    enabled: boolean
+    createdAt: string
+    avatar: string
   }>({
-    name: "",
+    fullname: "",
     email: "",
     role: "cajero",
     password: "",
-    status: "Activo",
+    enabled: true,
+    createdAt: "",
+    avatar: "",
   })
 
   const { user: currentAuthUser } = useAuth()
+
+
+  useEffect(() => {
+    
+    const loadUsers = async () => {
+      setIsLoading(true)
+      setError(null)
+      try {
+        const users = await fetchUsers()
+        setUsers(users)
+      } catch (error) {
+        setError(error instanceof Error ? error.message : "Error loading users")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadUsers()
+  }, [])
 
   // Filter users when search term or active tab changes
   useEffect(() => {
@@ -104,7 +125,7 @@ export function UserManagement({ compact = false }: UserManagementProps) {
     if (searchTerm) {
       result = result.filter(
         (user) =>
-          user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
           user.email.toLowerCase().includes(searchTerm.toLowerCase()),
       )
     }
@@ -124,23 +145,28 @@ export function UserManagement({ compact = false }: UserManagementProps) {
 
   const handleAddUser = () => {
     setCurrentUser({
-      name: "",
+      id: "",
+      fullname: "",
       email: "",
       role: "cajero",
       password: "",
-      status: "Activo",
+      enabled: true,
+      createdAt: "",
+      avatar: "",
     })
     setShowModal(true)
   }
 
-  const handleEditUser = (user: (typeof mockUsers)[0]) => {
+  const handleEditUser = (user: User) => {
     setCurrentUser({
       id: user.id,
-      name: user.name,
-      email: user.email,
+      fullname: user.fullname,
+      email: user.email || "",
       role: user.role,
       password: "", // We don't show the password when editing
-      status: user.status,
+      enabled: user.enabled,
+      createdAt: user.createdAt || "",
+      avatar: user.avatar || "",
     })
     setShowModal(true)
   }
@@ -169,10 +195,10 @@ export function UserManagement({ compact = false }: UserManagementProps) {
             user.id === currentUser.id
               ? {
                   ...user,
-                  name: currentUser.name,
+                  fullname: currentUser.fullname,
                   email: currentUser.email,
                   role: currentUser.role,
-                  status: currentUser.status,
+                  enabled: currentUser.enabled,
                 }
               : user,
           ),
@@ -181,11 +207,12 @@ export function UserManagement({ compact = false }: UserManagementProps) {
         // Add new user
         const newUser = {
           id: `${Date.now()}`,
-          name: currentUser.name,
+          fullname: currentUser.fullname,
           email: currentUser.email,
           role: currentUser.role,
-          status: currentUser.status,
-          lastLogin: new Date().toISOString(),
+          enabled: currentUser.enabled,
+          createdAt: new Date().toISOString(),
+          avatar: "",
         }
         setUsers([...users, newUser])
       }
@@ -319,17 +346,17 @@ export function UserManagement({ compact = false }: UserManagementProps) {
                 {filteredUsers.length > 0 ? (
                   filteredUsers.map((user) => (
                     <tr key={user.id}>
-                      <td className="fw-medium">{user.name}</td>
+                      <td className="fw-medium">{user.fullname}</td>
                       <td>{user.email}</td>
                       <td>
                         <span className={`badge ${rolePermissions[user.role].badgeClass}`}>
                           {rolePermissions[user.role].label}
                         </span>
                       </td>
-                      <td className="text-secondary">{formatDate(user.lastLogin)}</td>
+                      <td className="text-secondary">{formatDate(user.createdAt || "")}</td>
                       <td>
-                        <span className={`badge ${user.status === "Activo" ? "bg-success" : "bg-danger"}`}>
-                          {user.status}
+                        <span className={`badge ${user.enabled ? "bg-success" : "bg-danger"}`}>
+                          {user.enabled ? "Activo" : "Inactivo"}
                         </span>
                       </td>
                       <td className="text-end">
@@ -431,7 +458,7 @@ export function UserManagement({ compact = false }: UserManagementProps) {
                       className="form-control"
                       id="name"
                       name="name"
-                      value={currentUser.name}
+                      value={currentUser.fullname}
                       onChange={handleInputChange}
                       required
                       disabled={isLoading}
@@ -499,13 +526,13 @@ export function UserManagement({ compact = false }: UserManagementProps) {
                       className="form-select"
                       id="status"
                       name="status"
-                      value={currentUser.status}
+                      value={String(currentUser.enabled)}
                       onChange={handleInputChange}
                       required
                       disabled={isLoading}
                     >
-                      <option value="Activo">Activo</option>
-                      <option value="Inactivo">Inactivo</option>
+                      <option value="true">Activo</option>
+                      <option value="false">Inactivo</option>
                     </select>
                   </div>
                 </div>

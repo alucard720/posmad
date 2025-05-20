@@ -1,112 +1,119 @@
-import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+"use client"
+
+import type React from "react"
+import { useForm } from "react-hook-form"
 import { useAuth } from "../contexts/auth-context"
-import { userRoles } from "../services/user-service"
+import {loginAPI} from "../services/auth-service"
+import * as Yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
 
-// Demo user roles
-const USER_ROLES = [
-  { role: userRoles.administrador, label: "Administrador", color: "primary" },
-  { role: userRoles.propietario, label: "Propietario", color: "danger" },
-  { role: userRoles.cajero, label: "Cajero", color: "success" },
-]
+type SignupFormData = {
+  email: string;
+  password: string;
+  accessToken?: string;
+};
+const signupSchema = Yup.object().shape({
+  email: Yup.string().required("Correo Requerido").email("Correo invalido"),
+  password: Yup.string().trim().min(8, 'Debe tener minimo 8 letras').required("Contrasena requerida"),
+});
 
-export default function LoginPage() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [selectedRole, setSelectedRole] = useState<string | null>(null)
-  const navigate = useNavigate()
-  const { isAuthenticated } = useAuth()
+  
+const LoginPage: React.FC = () => {
+  const { loginUser } = useAuth();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignupFormData>({
+    resolver: yupResolver(signupSchema),
+  });
 
-  // Redirect if already logged in
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/")
-    }
-  }, [isAuthenticated, navigate])
-
-  const handleDirectLogin = async (role: string) => {
-    setSelectedRole(role)
-    setIsLoading(true)
-
+  const onSubmit = async (form: SignupFormData) => {
     try {
-      // Set auth cookies
-      document.cookie = "auth-token=authenticated; path=/; max-age=86400"
-      document.cookie = `user-role=${role}; path=/; max-age=86400`
+      await loginAPI(form.email, form.password); // <-- just call loginAPI (no axios.post manually)
+      loginUser(form.email, form.password);      // <-- then update your context
+    } catch (error) {
+      console.error("Error during login:", error);
+    } 
+  };
 
-      // Create mock user
-      const mockUser = {
-        id: `demo-${Date.now()}`,
-        fullname:
-          role === userRoles.administrador
-            ? "Admin User"
-            : role === userRoles.propietario
-              ? "Owner User"
-              : "Cashier User",
-        email: `${role}@example.com`,
-        role: role,
-        enabled: true,
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString(),
-      }
-
-      // Store user in localStorage
-      localStorage.setItem("user", JSON.stringify(mockUser))
-
-      // Redirect to dashboard
-      setTimeout(() => {
-        navigate("/")
-      }, 500)
-    } catch (err) {
-      console.error("Login error:", err)
-    }
-  }
+  
 
   return (
     <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light p-3">
       <div className="card shadow-sm" style={{ maxWidth: "400px", width: "100%" }}>
         <div className="card-body p-4">
           <div className="text-center mb-4">
-            <h2 className="fs-2 fw-bold">Acceso Directo</h2>
-            <p className="text-secondary">Selecciona un rol para acceder al sistema</p>
+            <h2 className="fs-2 fw-bold">Iniciar sesión</h2>
+            <p className="text-secondary">Ingresa tus credenciales para acceder al sistema</p>
           </div>
 
-          <div className="d-flex flex-column gap-3 mb-3">
-            {USER_ROLES.map((userRole) => (
-              <button
-                key={userRole.role}
-                className={`btn btn-${userRole.color} py-3 position-relative`}
-                onClick={() => handleDirectLogin(userRole.role)}
-                disabled={isLoading}
-              >
-                {isLoading && selectedRole === userRole.role ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    Accediendo...
-                  </>
-                ) : (
-                  <>
-                    <i
-                      className={`fas fa-user-${userRole.role === userRoles.administrador ? "shield" : userRole.role === userRoles.propietario ? "tie" : "tag"} me-2`}
-                    ></i>
-                    Entrar como {userRole.label}
-                  </>
-                )}
-                {isLoading && selectedRole === userRole.role && (
-                  <div className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
-                    <div className="spinner-border text-light" role="status">
-                      <span className="visually-hidden">Cargando...</span>
-                    </div>
-                  </div>
-                )}
-              </button>
-            ))}
-          </div>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className="mb-3">
+              <label htmlFor="email-address" className="form-label">
+                Correo electrónico
+              </label>
+              <input
+                id="email-address"               
+                type="email"
+                autoComplete="email"
+                required
+                className="form-control"
+                {...register("email")}
+                placeholder="ejemplo@correo.com"
+              />
+               {errors.email && <p className="error-message">{errors.email.message}</p>}
+              {/* <div className="form-text">
+                Prueba con admin@example.com / password123 o cashier@example.com / password123
+              </div> */}
+            </div>
 
-          <div className="alert alert-info mt-4">
-            <i className="fas fa-info-circle me-2"></i>
-            Este es un modo de demostración. Se creará una sesión temporal con el rol seleccionado.
-          </div>
+            <div className="mb-3">
+              <label htmlFor="password" className="form-label">
+                Contraseña
+              </label>
+              <div className="input-group">
+                <input
+                  id="password"                 
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  className="form-control"
+                  {...register("password")}
+                  placeholder="Ingresa tu contraseña"
+                />
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                >
+                  <i className={`fas fa-eye-slash`}></i>
+                </button>
+              </div>
+            </div>
+
+            <div className="d-flex justify-content-between mb-4">
+              <div className="form-check">
+                <input id="remember-me" type="checkbox" className="form-check-input" />
+                <label htmlFor="remember-me" className="form-check-label">
+                  Recordarme
+                </label>
+              </div>
+
+              <a href="#" className="text-decoration-none text-success">
+                ¿Olvidaste tu contraseña?
+              </a>
+            </div>
+
+            <button type="submit" className="btn btn-success w-100">
+              {
+                "Iniciar sesión"
+              }
+            </button>
+          </form>
         </div>
       </div>
     </div>
   )
 }
+
+export default LoginPage;

@@ -1,8 +1,6 @@
-"use client"
 
 import { SearchBar } from "./search-bar"
 import { ProductGrid } from "./product-grid"
-import { UserManagement } from "./user-management"
 import { useAuth } from "../contexts/auth-context"
 
 export function HomepageContent() {
@@ -18,9 +16,9 @@ export function HomepageContent() {
               <h5 className="card-title mb-0">Gestión de Usuarios</h5>
               <span className="badge bg-primary">Solo Administradores</span>
             </div>
-            <div className="card-body p-0">
+            {/* <div className="card-body p-0">
               <UserManagement compact={true} />
-            </div>
+            </div> */}
           </div>
         </div>
       )}

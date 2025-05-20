@@ -1,8 +1,7 @@
-
 import { useEffect, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { useAuth } from "../contexts/auth-context"
-import { UserRole } from "../services/user-service"
+import { userRoles } from "../services/user-service"
 
 // Define menu items with role-based access
 const menuItems = [
@@ -10,74 +9,74 @@ const menuItems = [
     href: "/",
     icon: "fa-check-circle",
     label: "Vender",
-    roles: [UserRole.administrador, UserRole.cajero, UserRole.propietario],
+    roles: [userRoles.administrador, userRoles.cajero, userRoles.propietario],
     highlight: true,
   },
   {
     href: "/demo",
     icon: "fa-shopping-cart",
     label: "Demo Pagos",
-    roles: [UserRole.administrador, UserRole.cajero, UserRole.propietario],
+    roles: [userRoles.administrador, userRoles.cajero, userRoles.propietario],
   },
-  {
-    href: "/pedidos",
-    icon: "fa-shopping-cart",
-    label: "Pedidos",
-    roles: [UserRole.administrador, UserRole.cajero, UserRole.propietario],
-  },
+  // {
+  //   href: "/pedidos",
+  //   icon: "fa-shopping-cart",
+  //   label: "Pedidos",
+  //   roles: [userRoles.administrador, userRoles.cajero, userRoles.propietario],
+  // },
   {
     href: "/productos",
     icon: "fa-th",
     label: "Productos",
-    roles: [UserRole.administrador, UserRole.propietario],
+    roles: [userRoles.administrador, userRoles.propietario],
   },
   {
     href: "/catalogo",
     icon: "fa-list",
     label: "Catálogo",
-    roles: [UserRole.administrador, UserRole.propietario],
+    roles: [userRoles.administrador, userRoles.propietario],
   },
   {
     href: "/clientes",
     icon: "fa-users",
     label: "Clientes",
-    roles: [UserRole.administrador, UserRole.cajero, UserRole.propietario],
+    roles: [userRoles.administrador, userRoles.cajero, userRoles.propietario],
   },
   {
     href: "/transacciones",
     icon: "fa-exchange-alt",
     label: "Transacciones",
-    roles: [UserRole.administrador, UserRole.propietario],
+    roles: [userRoles.administrador, userRoles.propietario],
   },
+  // {
+  //   href: "/finanzas",
+  //   icon: "fa-dollar-sign",
+  //   label: "Finanzas",
+  //   roles: [userRoles.administrador, userRoles.propietario],
+  // },
+  // {
+  //   href: "/estadisticas",
+  //   icon: "fa-chart-bar",
+  //   label: "Estadísticas",
+  //   roles: [userRoles.administrador, userRoles.propietario],
+  // },
+  // {
+  //   href: "/usuarios",
+  //   icon: "fa-user-friends",
+  //   label: "Usuarios",
+  //   roles: [userRoles.administrador, userRoles.propietario],
+  // },
   {
-    href: "/finanzas",
-    icon: "fa-dollar-sign",
-    label: "Finanzas",
-    roles: [UserRole.administrador, UserRole.propietario],
-  },
-  {
-    href: "/estadisticas",
-    icon: "fa-chart-bar",
-    label: "Estadísticas",
-    roles: [UserRole.administrador, UserRole.propietario],
-  },
-  {
-    href: "/usuarios",
-    icon: "fa-user-friends",
-    label: "Usuarios",
-    roles: [UserRole.administrador, UserRole.propietario],
-  },
-  {
-    href: "/usuarios/configuracion",
+    href: "/user",
     icon: "fa-user-cog",
     label: "Gestión Usuarios",
-    roles: [UserRole.propietario, UserRole.administrador],
+    roles: [userRoles.propietario, userRoles.administrador],
   },
   {
     href: "/configuraciones",
     icon: "fa-cog",
     label: "Configuraciones",
-    roles: [UserRole.administrador, UserRole.propietario],
+    roles: [userRoles.administrador, userRoles.propietario],
   },
 ]
 
@@ -166,11 +165,11 @@ export default function Sidebar() {
           {/* Role indicator */}
           <div className={`text-center mb-2 px-2 ${expanded ? "d-block" : "d-none"}`}>
             <span
-              className={`badge ${user?.role === UserRole.propietario ? "bg-danger" : user?.role === UserRole.administrador ? "bg-primary" : "bg-secondary"} text-white`}
+              className={`badge ${user?.role === userRoles.propietario ? "bg-danger" : user?.role === userRoles.administrador ? "bg-primary" : "bg-secondary"} text-white`}
             >
-              {user?.role === UserRole.propietario
+              {user?.role === userRoles.propietario
                 ? "Propietario"
-                : user?.role === UserRole.administrador
+                : user?.role === userRoles.administrador
                   ? "Administrador"
                   : "Cajero"}
             </span>

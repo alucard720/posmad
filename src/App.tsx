@@ -2,10 +2,10 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import { Suspense , lazy} from "react"
 import { AppProvider } from "./contexts/app-provider"
 import { AuthProvider } from "./contexts/auth-context"
-import ProtectedRoute from "./components/proctect-route"
+// import ProtectedRoute from "./components/proctect-route"
 import Loading from "./loading"
 import NotFoundPage from "./not-found"
-import LoginPage from "./pages/login"
+import LoginPage  from "./pages/login"
 
 // Lazy load pages
 // const LoginPage = lazy(() => import("./pages/login"))
@@ -13,7 +13,7 @@ const DashboardLayout = lazy(() => import("./pages/dashboard-layout"))
 const HomePage = lazy(() => import("./pages/home"))
 // const ProductsPage = lazy(() => import("./pages/products"))
 // const OrdersPage = lazy(() => import("./pages/orders"))
-// const UsersPage = lazy(() => import("./pages/users"))
+const UsersPage = lazy(() => import("./pages/user"))
 // const NotFoundPage = lazy(() => import("./pages/not-found"))
 
 function App() {
@@ -24,17 +24,11 @@ function App() {
           <Suspense fallback={<Loading />}>
             <Routes>
               {/* Public routes */}
-              <Route path="/login" element={<LoginPage />} />
+              <Route path="/" element={<LoginPage />} />
+              <Route path="/user" element={<UsersPage />} />
 
               {/* Protected routes */}
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <DashboardLayout />
-                  </ProtectedRoute>
-                }
-              >
+              <Route path="/dashboard" element={<DashboardLayout />}>
                 <Route index element={<HomePage />} />
                 {/* <Route path="productos" element={<ProductsPage />} />
                 <Route path="pedidos" element={<OrdersPage />} />
