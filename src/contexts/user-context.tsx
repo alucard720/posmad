@@ -1,25 +1,29 @@
-"use client"
-
 import { createContext, useContext, useState, type ReactNode } from "react"
+import { type Role } from "../types/User" // Adjust this path if needed
+
+export type UserProfile = {
+  fullname: string
+  email: string
+  avatar: string
+  role: Role | null
+}
 
 type UserContextType = {
   customerName: string
   setCustomerName: (name: string) => void
-  userProfile: {
-    name: string
-    email: string
-    avatar: string
-  }
+  userProfile: UserProfile
+  setUserProfile: (profile: UserProfile) => void
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
 
 export function UserProvider({ children }: { children: ReactNode }) {
   const [customerName, setCustomerName] = useState("HECMANUEL")
-  const [userProfile] = useState({
-    name: "Miguel Santana",
-    email: "mg.santana35@gmail.com",
-    avatar: "MI",
+  const [userProfile, setUserProfile] = useState<UserProfile>({
+    fullname: "",
+    email: "",
+    avatar: "../src/assets/react.svg",
+    role: null,
   })
 
   return (
@@ -28,6 +32,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         customerName,
         setCustomerName,
         userProfile,
+        setUserProfile,
       }}
     >
       {children}

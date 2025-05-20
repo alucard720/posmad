@@ -2,10 +2,20 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { useAuth, type UserRole } from "../contexts/auth-context"
+import { useAuth } from "../contexts/auth-context"
 import { formatDate } from "../lib/utils"
-import type { User } from "../services/user-service"
+import type { User, Role } from "../types/User"
+import { roles } from "../types/User"
 import { fetchUsers } from "../services/user-service"
+
+// Define role name type
+export type RoleName = 'propietario' | 'administrador' | 'cajero'
+
+// Create a map of role names to role objects
+// const roleMap = new Map<RoleName, Role>(
+//   roles.map(role => [role.name as RoleName, role])
+// )
+
 
 // Mock user data for demonstration
 // const mockUsers = [
@@ -13,7 +23,7 @@ import { fetchUsers } from "../services/user-service"
 //     id: "1",
 //     name: "Miguel Santana",
 //     email: "miguel@example.com",
-//     role: "propietario" as UserRole,
+//     role: "propietario",
 //     status: "Activo",
 //     lastLogin: "2023-05-15T10:30:00Z",
 //   },
@@ -21,7 +31,7 @@ import { fetchUsers } from "../services/user-service"
 //     id: "2",
 //     name: "Ana Martínez",
 //     email: "ana@example.com",
-//     role: "administrador" as UserRole,
+//     role: "administrador",
 //     status: "Activo",
 //     lastLogin: "2023-05-14T14:45:00Z",
 //   },
@@ -44,7 +54,13 @@ import { fetchUsers } from "../services/user-service"
 // ]
 
 // Define permission levels for each role
-const rolePermissions = {
+const rolePermissions: Record<string, {
+  label: string;
+  description: string;
+  canManage: string[];
+  badge: string;
+  badgeClass: string;
+}> = {
   propietario: {
     label: "Propietario",
     description: "Acceso completo al sistema, incluyendo configuraciones financieras y reportes avanzados.",
@@ -73,27 +89,18 @@ export function UserManagement() {
   const [users, setUsers] = useState<User[]>([])
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [activeTab, setActiveTab] = useState<UserRole | "all">("all")
+  const [activeTab, setActiveTab] = useState<string | "all">("all")
   const [showModal, setShowModal] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [currentUser, setCurrentUser] = useState<{
-    id?: string
-    fullname: string
-    email: string
-    role: UserRole
-    password: string
-    enabled: boolean
-    createdAt: string
-    avatar: string
-  }>({
+  const [currentUser, setCurrentUser] = useState<User>({
+    id: "",
     fullname: "",
     email: "",
-    role: "cajero",
+    role: roles.find(r => r.name === "cajero") || roles[0],
     password: "",
     enabled: true,
     createdAt: "",
-    avatar: "",
   })
 
   const { user: currentAuthUser } = useAuth()
@@ -132,7 +139,7 @@ export function UserManagement() {
 
     // Filter by role tab
     if (activeTab !== "all") {
-      result = result.filter((user) => user.role === activeTab)
+      result = result.filter((user) => user.role.name === activeTab)
     }
 
     setFilteredUsers(result)
@@ -148,11 +155,10 @@ export function UserManagement() {
       id: "",
       fullname: "",
       email: "",
-      role: "cajero",
+      role: roles.find(r => r.name === "cajero") || roles[0],
       password: "",
       enabled: true,
       createdAt: "",
-      avatar: "",
     })
     setShowModal(true)
   }
@@ -166,7 +172,6 @@ export function UserManagement() {
       password: "", // We don't show the password when editing
       enabled: user.enabled,
       createdAt: user.createdAt || "",
-      avatar: user.avatar || "",
     })
     setShowModal(true)
   }
@@ -225,20 +230,20 @@ export function UserManagement() {
   // Count users by role
   const userCounts = {
     all: users.length,
-    owner: users.filter((user) => user.role === "propietario").length,
-    administrator: users.filter((user) => user.role === "administrador").length,
-    cashier: users.filter((user) => user.role === "cajero").length,
+    owner: users.filter((user) => user.role.name === "propietario").length,
+    administrator: users.filter((user) => user.role.name === "administrador").length,
+    cashier: users.filter((user) => user.role.name === "cajero").length,
   }
 
   // Check if current user can manage a specific role
-  const canManageRole = (role: UserRole): boolean => {
+  const canManageRole = (roleName: string): boolean => {
     if (!currentAuthUser) return false
 
     // Owner can manage all roles
-    if (currentAuthUser.role === "propietario") return true
+    if (currentAuthUser.role.name === "propietario") return true
 
     // Administrator can only manage cashiers
-    if (currentAuthUser.role === "administrador") return role === "cajero"
+    if (currentAuthUser.role.name === "administrador") return roleName === "cajero"
 
     // Cashiers can't manage any roles
     return false
@@ -349,8 +354,8 @@ export function UserManagement() {
                       <td className="fw-medium">{user.fullname}</td>
                       <td>{user.email}</td>
                       <td>
-                        <span className={`badge ${rolePermissions[user.role].badgeClass}`}>
-                          {rolePermissions[user.role].label}
+                        <span className={`badge ${rolePermissions[user.role.name].badgeClass}`}>
+                          {rolePermissions[user.role.name].label}
                         </span>
                       </td>
                       <td className="text-secondary">{formatDate(user.createdAt || "")}</td>
@@ -360,7 +365,7 @@ export function UserManagement() {
                         </span>
                       </td>
                       <td className="text-end">
-                        {canManageRole(user.role) && (
+                        {canManageRole(user.role.name) && (
                           <>
                             <button
                               className="btn btn-sm btn-outline-primary me-2"
@@ -416,7 +421,7 @@ export function UserManagement() {
                     info.canManage.map((managedRole) => (
                       <li key={managedRole} className="mb-1">
                         <i className="fas fa-check-circle text-success me-2"></i>
-                        {rolePermissions[managedRole as UserRole]?.label || managedRole}
+                        {rolePermissions[managedRole as keyof typeof rolePermissions]?.label || managedRole}
                       </li>
                     ))
                   ) : (
@@ -487,20 +492,20 @@ export function UserManagement() {
                       className="form-select"
                       id="role"
                       name="role"
-                      value={currentUser.role}
+                      value={currentUser.role.name}
                       onChange={handleInputChange}
                       required
                       disabled={isLoading}
                     >
                       {/* Only show roles the current user can manage */}
-                      {currentAuthUser?.role === "propietario" && <option value="propietario">Propietario</option>}
-                      {(currentAuthUser?.role === "propietario" || currentAuthUser?.role === "administrador") && (
+                      {currentAuthUser?.role.name === "propietario" && <option value="propietario">Propietario</option>}
+                      {(currentAuthUser?.role.name === "propietario" || currentAuthUser?.role.name === "administrador") && (
                         <option value="administrador">Administrador</option>
                       )}
                       <option value="cajero">Cajero</option>
                     </select>
                     <div className="form-text">
-                      {rolePermissions[currentUser.role]?.description || "Selecciona un rol para ver su descripción"}
+                      {rolePermissions[currentUser.role.name]?.description || "Selecciona un rol para ver su descripción"}
                     </div>
                   </div>
                   <div className="mb-3">

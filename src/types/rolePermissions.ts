@@ -1,4 +1,4 @@
-import { UserRole, type Permissions } from "../types/User";
+import type { UserRole, Permissions } from "../types/User";
 
 export const rolePermissions: Record<UserRole, Permissions> = {
   [UserRole.propietario]: {

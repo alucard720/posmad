@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { useNavigate } from "react-router-dom"
-import { type User, type UserRole } from "../types/User"
+import { type User, type Role } from "../types/User"
 import { loginAPI } from "../services/auth-service"
 import axios from "axios";
 
@@ -10,11 +10,13 @@ type AuthContextType = {
   user: User | null
   isLoading: boolean
   isAuthenticated: boolean
-  userRole: UserRole | null
+  userRole: Role | null
+  token: string | null
+  setToken: (token: string | null) => void
   loginUser: (email: string, password: string) => void
   //register: (name: string, email: string, password: string, role: UserRole, status: string) => Promise<boolean>
   logout: () => void
-  hasPermission: (requiredRole: UserRole | UserRole[]) => boolean
+  hasPermission: (requiredRole: Role | Role[]) => boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -24,7 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate()
-
+  
   // Check if user is logged in on initial load
   useEffect(() => {
     const user = localStorage.getItem("user");
@@ -108,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const token = await loginAPI(email, password);
       if (token) {
-        localStorage.setItem("token", token);
+        localStorage.setItem("token", token.accessToken);
         const userObj: User = {        
           id: token.id, // Replace with actual user ID from API response
           fullname: token.User_fullname,  // Replace with actual user name from API response
@@ -121,7 +123,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         localStorage.setItem("user", JSON.stringify(userObj));       
         setUser(userObj);
-        // toast.success("Login Exitoso")
+        setToken(token.accessToken);
+
+
+        
         navigate("/dashboard");
       }
     } catch (e) {
@@ -135,11 +140,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     document.cookie = "auth-token=; path=/; max-age=0"
     document.cookie = "user-role=; path=/; max-age=0"
     setUser(null)
-    navigate("/login")
+    navigate("/")
   }
 
   // Helper function to check if user has required role(s)
-  const hasPermission = (requiredRole: UserRole | UserRole[]): boolean => {
+  const hasPermission = (requiredRole: Role | Role[]): boolean => {
     if (!user) return false
 
     if (Array.isArray(requiredRole)) {
@@ -159,6 +164,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loginUser,
         logout,
         hasPermission,
+        token,
+        setToken
       }}
     >
       {isLoading ? children : null}

@@ -6,6 +6,8 @@ import { useAuth } from "../contexts/auth-context"
 import {loginAPI} from "../services/auth-service"
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faWineBottle } from "@fortawesome/free-solid-svg-icons"
 
 type SignupFormData = {
   email: string;
@@ -18,7 +20,7 @@ const signupSchema = Yup.object().shape({
 });
 
   
-const LoginPage: React.FC = () => {
+const LoginPage: React.FC = () => {  
   const { loginUser } = useAuth();
   const {
     register,
@@ -44,7 +46,7 @@ const LoginPage: React.FC = () => {
       <div className="card shadow-sm" style={{ maxWidth: "400px", width: "100%" }}>
         <div className="card-body p-4">
           <div className="text-center mb-4">
-            <h2 className="fs-2 fw-bold">Iniciar sesión</h2>
+            <h2 className="fs-2 fw-bold"><span><FontAwesomeIcon icon={faWineBottle} /></span>MADPOS</h2>
             <p className="text-secondary">Ingresa tus credenciales para acceder al sistema</p>
           </div>
 

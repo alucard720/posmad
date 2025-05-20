@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { useAuth } from "../contexts/auth-context"
-import { userRoles } from "../services/user-service"
+import { roles } from "../types/User"
 
 // Define menu items with role-based access
 const menuItems = [
@@ -9,14 +9,14 @@ const menuItems = [
     href: "/",
     icon: "fa-check-circle",
     label: "Vender",
-    roles: [userRoles.administrador, userRoles.cajero, userRoles.propietario],
+    roles: [roles[2], roles[1], roles[0]],
     highlight: true,
   },
   {
     href: "/demo",
     icon: "fa-shopping-cart",
     label: "Demo Pagos",
-    roles: [userRoles.administrador, userRoles.cajero, userRoles.propietario],
+    roles: [roles[2], roles[1], roles[0]],
   },
   // {
   //   href: "/pedidos",
@@ -28,25 +28,25 @@ const menuItems = [
     href: "/productos",
     icon: "fa-th",
     label: "Productos",
-    roles: [userRoles.administrador, userRoles.propietario],
+    roles: [roles[2], roles[1]],
   },
   {
     href: "/catalogo",
     icon: "fa-list",
     label: "Catálogo",
-    roles: [userRoles.administrador, userRoles.propietario],
+    roles: [roles[2], roles[1]],
   },
   {
     href: "/clientes",
     icon: "fa-users",
     label: "Clientes",
-    roles: [userRoles.administrador, userRoles.cajero, userRoles.propietario],
+    roles: [roles[2], roles[1], roles[0]],
   },
   {
     href: "/transacciones",
     icon: "fa-exchange-alt",
     label: "Transacciones",
-    roles: [userRoles.administrador, userRoles.propietario],
+    roles: [roles[2], roles[1]],
   },
   // {
   //   href: "/finanzas",
@@ -70,13 +70,13 @@ const menuItems = [
     href: "/user",
     icon: "fa-user-cog",
     label: "Gestión Usuarios",
-    roles: [userRoles.propietario, userRoles.administrador],
+    roles: [roles[2], roles[1]],
   },
   {
     href: "/configuraciones",
     icon: "fa-cog",
     label: "Configuraciones",
-    roles: [userRoles.administrador, userRoles.propietario],
+    roles: [roles[2], roles[1]],
   },
 ]
 
@@ -165,11 +165,11 @@ export default function Sidebar() {
           {/* Role indicator */}
           <div className={`text-center mb-2 px-2 ${expanded ? "d-block" : "d-none"}`}>
             <span
-              className={`badge ${user?.role === userRoles.propietario ? "bg-danger" : user?.role === userRoles.administrador ? "bg-primary" : "bg-secondary"} text-white`}
+              className={`badge ${user?.role === roles[2] ? "bg-danger" : user?.role === roles[1] ? "bg-primary" : "bg-secondary"} text-white`}
             >
-              {user?.role === userRoles.propietario
+              {user?.role === roles[2]
                 ? "Propietario"
-                : user?.role === userRoles.administrador
+                : user?.role === roles[1]
                   ? "Administrador"
                   : "Cajero"}
             </span>

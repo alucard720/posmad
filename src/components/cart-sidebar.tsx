@@ -37,8 +37,8 @@ export function CartSidebar() {
   }
 
   return (
-    <div className="bg-white border-start d-flex flex-column" style={{ width: "320px" }}>
-      <div className="p-2 border-bottom d-flex justify-content-between align-items-center">
+    <div className="bg-white border-start d-flex flex-column" style={{ width: "350px" }}>
+      <div className="p-2 border-bottom d-flex justify-content-between align-items-center" style={{width:"250px"}}>
         <div className="small fw-medium">{customerName}</div>
         <button className="btn btn-sm text-secondary border-0" onClick={() => setIsCartOpen(!isCartOpen)}>
           {isCartOpen ? <i className="fas fa-times"></i> : <i className="fas fa-shopping-cart"></i>}
@@ -58,7 +58,7 @@ export function CartSidebar() {
               </p>
             </div>
           ) : cart.length > 0 ? (
-            <div className="flex-grow-1 overflow-auto">
+            <div className="flex-grow-1 overflow-auto" style={{width:"250px"}}>
               {showPaymentOptions ? (
                 <div className="p-3">
                   <PaymentMethods total={cartTotal} onPaymentComplete={handlePaymentComplete} />
@@ -78,7 +78,7 @@ export function CartSidebar() {
                       <i className="fas fa-trash-alt me-1"></i> Limpiar todo
                     </button>
                   </div>
-                  <div className="p-3">
+                  <div className="p-2">
                     {cart.map((item) => (
                       <CartItem key={item.id} item={item} />
                     ))}

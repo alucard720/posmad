@@ -140,7 +140,7 @@ export default function Dashboard() {
                 {userProfile.avatar}
               </div>
               <div className="text-sm">
-                <div className="font-medium">{userProfile.name}</div>
+                <div className="font-medium">{userProfile.fullname}</div>
                 <div className="text-gray-500 text-xs">{userProfile.email}</div>
               </div>
               <FontAwesomeIcon icon={faChevronDown}  className="text-gray-500" />

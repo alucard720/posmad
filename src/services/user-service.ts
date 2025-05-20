@@ -1,4 +1,5 @@
-import type { UserRole } from "../types/User"
+import axios from "axios"
+import type { Role } from "../types/User"
 
 // Define user types
 export type User = {
@@ -6,26 +7,22 @@ export type User = {
   email: string
   fullname: string
   password: string // Note: In a real app, passwords should never be stored in plain text
-  role: UserRole
+  role: Role
   enabled: boolean
   createdAt: string
+  updatedAt: string
   token?: string
 }
 
 // MockAPI URL - replace with your actual MockAPI endpoint
-const MOCKAPI_URL = "http://localhost:8184/v1/auth/sign-in"
+const API_URL = "http://localhost:8184/v1/users"
 
 // Get all users
 export async function fetchUsers(): Promise<User[]> {
   try {
-    const response = await fetch(MOCKAPI_URL)
+    const response = await axios.get(API_URL)
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`)
-    }
-
-    const data = await response.json()
-    return data || []
+    return response.data?.data?.records || []
   } catch (error) {
     console.error("Error fetching users:", error)
     return []
@@ -35,13 +32,9 @@ export async function fetchUsers(): Promise<User[]> {
 // Get user by ID
 export async function fetchUserById(id: string): Promise<User | null> {
   try {
-    const response = await fetch(`${MOCKAPI_URL}/${id}`)
+    const response = await axios.get(`${API_URL}/${id}`)
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`)
-    }
-
-    return await response.json()
+    return response.data?.data?.records || null
   } catch (error) {
     console.error(`Error fetching user with ID ${id}:`, error)
     return null
@@ -51,19 +44,9 @@ export async function fetchUserById(id: string): Promise<User | null> {
 // Create a new user
 export async function createUser(user: Omit<User, "id">): Promise<User | null> {
   try {
-    const response = await fetch(MOCKAPI_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(user),
-    })
+    const response = await axios.post(API_URL, user)
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`)
-    }
-
-    return await response.json()
+    return response.data?.data?.records || null
   } catch (error) {
     console.error("Error creating user:", error)
     return null
@@ -73,19 +56,10 @@ export async function createUser(user: Omit<User, "id">): Promise<User | null> {
 // Update an existing user
 export async function updateUser(id: string, updates: Partial<User>): Promise<User | null> {
   try {
-    const response = await fetch(`${MOCKAPI_URL}/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(updates),
-    })
+    const response = await axios.put(`${API_URL}/${id}`, updates)
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`)
-    }
+    return response.data?.data?.records || null
 
-    return await response.json()
   } catch (error) {
     console.error(`Error updating user with ID ${id}:`, error)
     return null
@@ -95,15 +69,9 @@ export async function updateUser(id: string, updates: Partial<User>): Promise<Us
 // Delete a user
 export async function deleteUser(id: string): Promise<boolean> {
   try {
-    const response = await fetch(`${MOCKAPI_URL}/${id}`, {
-      method: "DELETE",
-    })
+    const response = await axios.delete(`${API_URL}/${id}`)
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`)
-    }
-
-    return true
+    return response.data?.data?.records || false
   } catch (error) {
     console.error(`Error deleting user with ID ${id}:`, error)
     return false
@@ -111,21 +79,13 @@ export async function deleteUser(id: string): Promise<boolean> {
 }
 
 // Authenticate a user
-export async function authenticateUser(email: string, password: string): Promise<User | null> {
+export async function authenticateUser(email: string, password: string): Promise<{user: User, token: string} | null> {
   try {
-    // In a real app, you would use a dedicated authentication endpoint
-    // For MockAPI, we'll fetch all users and find the matching one
-    const users = await fetchUsers()
-    const user = users.find((u) => u.email === email && u.password === password)
+    const response = await axios.post(`${API_URL}/login`, { email, password })
 
-    if (user) {
-      // Update last login time
-      // const now = new Date().toISOString()
-      // await updateUser(user.id, { lastLogin: now })
-      return user
-    }
+    const {user, token} = response.data?.data?.records || null
 
-    return null
+    return {user, token}
   } catch (error) {
     console.error("Error authenticating user:", error)
     return null
