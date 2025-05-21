@@ -1,28 +1,28 @@
 import axios from "axios"
-import type { Role } from "../types/User"
+import type { User } from "../types/User"
 
-// Define user types
-export type User = {
-  id: string
-  email: string
-  fullname: string
-  password: string // Note: In a real app, passwords should never be stored in plain text
-  role: Role
-  enabled: boolean
-  createdAt: string
-  updatedAt: string
-  token?: string
-}
+// // Define user types
+// export type User = {
+//   id: string
+//   email: string
+//   fullname: string
+//   password: string // Note: In a real app, passwords should never be stored in plain text
+//   role: string
+//   enabled: boolean
+//   createdAt: string
+//   updatedAt: string
+//   token?: string
+// }
 
 // MockAPI URL - replace with your actual MockAPI endpoint
-const API_URL = "http://localhost:8184/v1/users"
+const API_URL = "http://localhost:8184/v1/auth/profile"
 
 // Get all users
 export async function fetchUsers(): Promise<User[]> {
   try {
     const response = await axios.get(API_URL)
 
-    return response.data?.data?.records || []
+    return response.data || []
   } catch (error) {
     console.error("Error fetching users:", error)
     return []
@@ -92,35 +92,4 @@ export async function authenticateUser(email: string, password: string): Promise
   }
 }
 
-// Fallback mock users
-// function getMockUsers(): User[] {
-//   return [
-//     {
-//       id: "1",
-//       email: "owner@example.com",
-//       fullname: "Owner User",
-//       password: "password123",
-//       role: "propietario",
-//       enabled: true,
-//       createdAt: "2023-05-15 10:30",
-//     },
-//     {
-//       id: "2",
-//       email: "admin@example.com",
-//       fullname: "Admin User",
-//       password: "password123",
-//       role: "administrator",
-//       enabled: true,
-//       createdAt: "2023-05-14 09:15",
-//     },
-//     {
-//       id: "3",
-//       email: "cashier@example.com",
-//       fullname: "Cashier User",
-//       password: "password123",
-//       role: "cashier",
-//       enabled: true,
-//       createdAt: "2023-05-13 14:20",
-//     },
-//   ]
-// }
+

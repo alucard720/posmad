@@ -1,8 +1,11 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { useNavigate } from "react-router-dom"
-import { type User, type Role } from "../types/User"
+import type { User } from "../types/User"
 import { loginAPI } from "../services/auth-service"
 import axios from "axios";
+import { createUser } from "../services/user-service"
+import { ROLES } from "../types/roles"
+
 
 
 
@@ -10,13 +13,13 @@ type AuthContextType = {
   user: User | null
   isLoading: boolean
   isAuthenticated: boolean
-  userRole: Role | null
+  userRole: typeof ROLES[keyof typeof ROLES] | null
   token: string | null
   setToken: (token: string | null) => void
   loginUser: (email: string, password: string) => void
-  //register: (name: string, email: string, password: string, role: UserRole, status: string) => Promise<boolean>
+  register: (name: string, email: string, password: string, role: string, enabled: boolean) => Promise<boolean>
   logout: () => void
-  hasPermission: (requiredRole: Role | Role[]) => boolean
+  hasPermission: (requiredRole: string | string[]) => boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -75,34 +78,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   //   }
   // }
 
-  // const register = async (
-  //   fullname: string,
-  //   email: string,
-  //   password: string,
-  //   role: UserRole,
-  //   enabled: boolean,
-  // ): Promise<boolean> => {
-  //   try {
-  //     setIsLoading(true)
+  const register = async (
+    fullname: string,
+    email: string,
+    password: string,
+    role: string,
+    enabled: boolean,
+  ): Promise<boolean> => {
+    try {
+      setIsLoading(true)
 
-  //     const newUser: Omit<User, "id"> = {
-  //       id:"",
-  //       fullname,
-  //       email,
-  //       password,
-  //       role,
-  //       enabled,
-  //     }
+      const newUser: Omit<User, "id"> = {
+        fullname,
+        email,
+        password,
+        role,
+        enabled,
+        createdAt: new Date().toISOString(),
+      }
 
-  //     const createdUser = await createUser(newUser)
-  //     return !!createdUser
-  //   } catch (error) {
-  //     console.error("Registration failed:", error)
-  //     return false
-  //   } finally {
-  //     setIsLoading(false)
-  //   }
-  // }
+      const createdUser = await createUser(newUser)
+      return !!createdUser
+    } catch (error) {
+      console.error("Registration failed:", error)
+      return false
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
 
   const loginUser = async (email: string, password: string) => {
@@ -113,14 +116,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem("token", token.accessToken);
         const userObj: User = {        
           id: token.id, // Replace with actual user ID from API response
-          fullname: token.User_fullname,  // Replace with actual user name from API response
+          fullname: token.fullname,  // Replace with actual user name from API response
           email: email,
           password: "",
-          role: token.role,          
+          role: token.role as typeof ROLES[keyof typeof ROLES],          
           enabled: true,    // Replace with actual role from API response
           createdAt:""
         };
-
+        console.log(token.role)
         localStorage.setItem("user", JSON.stringify(userObj));       
         setUser(userObj);
         setToken(token.accessToken);
@@ -144,7 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   // Helper function to check if user has required role(s)
-  const hasPermission = (requiredRole: Role | Role[]): boolean => {
+  const hasPermission = (requiredRole: string | string[]): boolean => {
     if (!user) return false
 
     if (Array.isArray(requiredRole)) {
@@ -160,9 +163,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         isLoading,
         isAuthenticated: !!user,
-        userRole: user?.role || null,
+        userRole: user?.role as typeof ROLES[keyof typeof ROLES] | null,
         loginUser,
         logout,
+        register,
         hasPermission,
         token,
         setToken
@@ -180,4 +184,3 @@ export function useAuth() {
   }
   return context
 }
-

@@ -1,11 +1,9 @@
 import { createContext, useContext, useState, type ReactNode } from "react"
-import { type Role } from "../types/User" // Adjust this path if needed
 
 export type UserProfile = {
   fullname: string
   email: string
   avatar: string
-  role: Role | null
 }
 
 type UserContextType = {
@@ -22,8 +20,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [userProfile, setUserProfile] = useState<UserProfile>({
     fullname: "",
     email: "",
-    avatar: "../src/assets/react.svg",
-    role: null,
+    avatar: "",
+   
   })
 
   return (

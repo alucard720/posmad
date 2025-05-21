@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import { Suspense , lazy} from "react"
 import { AppProvider } from "./contexts/app-provider"
 import { AuthProvider } from "./contexts/auth-context"
+import { UserProvider } from "./contexts/user-context"
 // import ProtectedRoute from "./components/proctect-route"
 import Loading from "./loading"
 import NotFoundPage from "./not-found"
@@ -20,6 +21,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
+        <UserProvider>
         <AppProvider>
           <Suspense fallback={<Loading />}>
             <Routes>
@@ -40,6 +42,7 @@ function App() {
             </Routes>
           </Suspense>
         </AppProvider>
+        </UserProvider>
       </AuthProvider>
     </Router>
   )

@@ -2,6 +2,7 @@
 
 import { useAuth } from "../contexts/auth-context"
 import { useState } from "react"
+import { ROLES } from "../types/roles"
 
 type HeaderProps = {
   title: string
@@ -37,20 +38,21 @@ export function Header({ title }: HeaderProps) {
           >
             <div className="avatar">{getInitials(user?.fullname)}</div>
             <div className="small">
-              <div className="fw-medium">{user?.fullname || "Usuario"}</div>
+              <div className="fw-medium">{user?.fullname}</div>
               <div className="text-secondary small">
-                {user?.email || ""}
+                {user?.email}
                 {user && (
                   <span
                     className={`badge ms-1 ${
-                      user.role === "propietario"
+                      user.role === ROLES.ADMINISTRADOR
                         ? "bg-danger"
-                        : user.role === "administrador"
+                        : user.role === ROLES.CAJERO
                           ? "bg-primary"
                           : "bg-secondary"
                     }`}
                   >
-                    {user.role === "propietario" ? "Propietario" : user.role === "administrador" ? "Admin" : "Cajero"}
+                    {user.role === ROLES.ADMINISTRADOR ? "Administrador" : user.role === ROLES.CAJERO ? "Cajero" : "Administrador"}
+                     console.log
                   </span>
                 )}
               </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { useAuth } from "../contexts/auth-context"
-import { roles } from "../types/User"
+import { ROLE_PERMISSIONS } from "../types/User"
 
 // Define menu items with role-based access
 const menuItems = [
@@ -9,14 +9,14 @@ const menuItems = [
     href: "/",
     icon: "fa-check-circle",
     label: "Vender",
-    roles: [roles[2], roles[1], roles[0]],
+    roles: [ROLE_PERMISSIONS.administrador, ROLE_PERMISSIONS.cajero],
     highlight: true,
   },
   {
     href: "/demo",
     icon: "fa-shopping-cart",
     label: "Demo Pagos",
-    roles: [roles[2], roles[1], roles[0]],
+    roles: [ROLE_PERMISSIONS.administrador, ROLE_PERMISSIONS.cajero],
   },
   // {
   //   href: "/pedidos",
@@ -28,25 +28,25 @@ const menuItems = [
     href: "/productos",
     icon: "fa-th",
     label: "Productos",
-    roles: [roles[2], roles[1]],
+    roles: [ROLE_PERMISSIONS.administrador, ROLE_PERMISSIONS.cajero],
   },
   {
     href: "/catalogo",
     icon: "fa-list",
     label: "Catálogo",
-    roles: [roles[2], roles[1]],
+    roles: [ROLE_PERMISSIONS.administrador, ROLE_PERMISSIONS.cajero],
   },
   {
     href: "/clientes",
     icon: "fa-users",
     label: "Clientes",
-    roles: [roles[2], roles[1], roles[0]],
+    roles: [ROLE_PERMISSIONS.administrador, ROLE_PERMISSIONS.cajero],
   },
   {
     href: "/transacciones",
     icon: "fa-exchange-alt",
     label: "Transacciones",
-    roles: [roles[2], roles[1]],
+    roles: [ROLE_PERMISSIONS.administrador, ROLE_PERMISSIONS.cajero],
   },
   // {
   //   href: "/finanzas",
@@ -70,13 +70,13 @@ const menuItems = [
     href: "/user",
     icon: "fa-user-cog",
     label: "Gestión Usuarios",
-    roles: [roles[2], roles[1]],
+    roles: [ROLE_PERMISSIONS.administrador],
   },
   {
     href: "/configuraciones",
     icon: "fa-cog",
     label: "Configuraciones",
-    roles: [roles[2], roles[1]],
+    roles: [ROLE_PERMISSIONS.administrador],
   },
 ]
 
@@ -87,7 +87,7 @@ export default function Sidebar() {
   const [isMobile, setIsMobile] = useState(false)
 
   // Filter menu items based on user role
-  const filteredMenuItems = menuItems.filter((item) => user && hasPermission(item.roles))
+  const filteredMenuItems = menuItems.filter((item) => user && hasPermission(item.roles as unknown as string[]))
 
   // Handle responsive behavior
   useEffect(() => {
@@ -165,11 +165,11 @@ export default function Sidebar() {
           {/* Role indicator */}
           <div className={`text-center mb-2 px-2 ${expanded ? "d-block" : "d-none"}`}>
             <span
-              className={`badge ${user?.role === roles[2] ? "bg-danger" : user?.role === roles[1] ? "bg-primary" : "bg-secondary"} text-white`}
+              className={`badge ${user?.role === "ADMINISTRADOR" ? "bg-danger" : user?.role === "CAJERO" ? "bg-primary" : "bg-secondary"} text-white`}
             >
-              {user?.role === roles[2]
+              {user?.role === "ADMINISTRADOR"
                 ? "Propietario"
-                : user?.role === roles[1]
+                : user?.role === "CAJERO"
                   ? "Administrador"
                   : "Cajero"}
             </span>
