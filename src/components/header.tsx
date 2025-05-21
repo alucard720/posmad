@@ -44,15 +44,15 @@ export function Header({ title }: HeaderProps) {
                 {user && (
                   <span
                     className={`badge ms-1 ${
-                      user.role === ROLES.ADMINISTRADOR
+                      user.role === ROLES.SUPER
                         ? "bg-danger"
                         : user.role === ROLES.CAJERO
                           ? "bg-primary"
                           : "bg-secondary"
                     }`}
                   >
-                    {user.role === ROLES.ADMINISTRADOR ? "Administrador" : user.role === ROLES.CAJERO ? "Cajero" : "Administrador"}
-                     console.log
+                    {user.role === ROLES.SUPER ? "Superuser" : user.role === ROLES.CAJERO ? "Cajero" : "Propietario"}
+                    
                   </span>
                 )}
               </div>
