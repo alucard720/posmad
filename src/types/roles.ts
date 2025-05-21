@@ -1,7 +1,8 @@
 export const ROLES ={
-    ADMINISTRADOR: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-    CAJERO: "7c9e6679-7425-40de-944b-e07fc1f90ae7",
-    // PROPIETARIO: 
+    ADMIN: "Administrador",
+    PROP: "Propierario",
+    USER: "Usuario",
+    CAJERO: "Cajero"
 };
 
 export const PERMISSIONS = {

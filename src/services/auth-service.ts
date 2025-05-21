@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { handleError } from "../lib/handleError";
+import type { User } from "../types/User";
 // Define types for authentication
 
 
@@ -20,7 +21,7 @@ const axiosInstance = axios.create({
 
 export const registerAPI = async(fullname: string, email: string,  role: string, enable:string)=>{
     try {
-        const response = await axios.post( api + "/v1/users", {
+        const response = await axios.post( api + "/v1/auth/sign-up", {
             fullname,
             email,
             role,
@@ -54,12 +55,12 @@ export const loginAPI = async(email: string, password: string)=>{
       api + "/v1/auth/sign-in",
       { email, password }
     );
-    if(!response){
+    
+    if(!response || !response.data){
         throw new Error("intente de nuevo")
     }else{
-       console.log("LoginAPi response:", response.data);
-    }
-    
+       
+    }    
     // Check if the response contains the access token and user data
     const accessToken = response.data.accessToken || response.data.token || response.data.data?.accessToken;
     const user = response.data.user || response.data.data?.user;
@@ -67,14 +68,11 @@ export const loginAPI = async(email: string, password: string)=>{
     if (!accessToken) {
       throw new Error("No access token received from server");
        }   
-
     localStorage.setItem("token", accessToken);
     if (user) {
         localStorage.setItem("user", JSON.stringify(user));
-    }  
-    
+    }      
     axiosInstance.defaults.headers.common["Authorization"] = `Bearer + ${accessToken}`;
-
     return accessToken;
   } catch (error) {
     handleError(error);
@@ -90,6 +88,21 @@ export const refreshTokenAPI = async()=>{
     } catch (error) {
         handleError(error);
         throw error;
+    }
+}
+
+export async function authenticateUser(email: string, password: string): Promise<User | null> {
+    try {
+        const response = await axios.post<User>(`${api}/v1/auth/profile`, {
+            email,
+            password,
+        });
+        return response.data || null;
+        
+    } catch (error) {
+        console.error('Error authenticating user:', error);
+        handleError(error);
+        return null;
     }
 }
 

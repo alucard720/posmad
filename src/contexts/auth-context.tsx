@@ -8,6 +8,14 @@ import { ROLES } from "../types/roles"
 
 
 
+interface JwtPayload {
+    user: {
+        id: string;
+        role: string;
+    };
+    iat: number;
+    exp: number;
+}
 
 type AuthContextType = {
   user: User | null
@@ -17,7 +25,7 @@ type AuthContextType = {
   token: string | null
   setToken: (token: string | null) => void
   loginUser: (email: string, password: string) => void
-  register: (name: string, email: string, password: string, role: string, enabled: boolean) => Promise<boolean>
+  register: (name: string, email: string, password: string, role: string, enabled: boolean ) => Promise<boolean>
   logout: () => void
   hasPermission: (requiredRole: string | string[]) => boolean
 }
@@ -42,41 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
   }, []);
 
-  // const login = async (email: string, password: string): Promise<boolean> => {
-  //   try {
-  //     setIsLoading(true)
 
-  //     const apiUser = await authenticateUser(email, password)
-
-  //     if (apiUser) {
-  //       // Map API user to our User type
-  //       const loggedInUser: User = {
-  //         id: apiUser.id,
-  //         fullname: apiUser.fullname,
-  //         email: apiUser.email,
-  //         role: apiUser.role,
-  //         enabled: apiUser.enabled,
-  //         createdAt: apiUser.createdAt,
-  //       }
-
-  //       // Store user in localStorage
-  //       localStorage.setItem("user", JSON.stringify(loggedInUser))
-
-  //       // Store role in cookie for middleware
-  //       document.cookie = `user-role=${loggedInUser.role}; path=/; max-age=86400`
-
-  //       setUser(loggedInUser)
-  //       return true
-  //     }
-
-  //     return false
-  //   } catch (error) {
-  //     console.error("Login failed:", error)
-  //     return false
-  //   } finally {
-  //     setIsLoading(false)
-  //   }
-  // }
 
   const register = async (
     fullname: string,
@@ -108,35 +82,68 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
 
-  const loginUser = async (email: string, password: string) => {
+
+// Login function
+const loginUser = async (email: string, password: string) => {
    
-    try {
-      const token = await loginAPI(email, password);
-      if (token) {
-        localStorage.setItem("token", token.accessToken);
-        const userObj: User = {        
-          id: token.id, // Replace with actual user ID from API response
-          fullname: token.fullname,  // Replace with actual user name from API response
-          email: email,
-          password: "",
-          role: token.role as typeof ROLES[keyof typeof ROLES],          
-          enabled: true,    // Replace with actual role from API response
-          createdAt:""
-        };
-        console.log(token.role)
-        localStorage.setItem("user", JSON.stringify(userObj));       
-        setUser(userObj);
-        setToken(token.accessToken);
+  try {
+    const token = await loginAPI(email, password);
+    if (token) {
+      localStorage.setItem("token", token.accessToken);        
+      const userObj: User = {        
+        id: token.id, 
+        fullname: token.fullname, 
+        email: email,
+        password: password,
+        role: token.role as typeof ROLES[keyof typeof ROLES],          
+        enabled: true,    
+        createdAt:""
+      };      
+      localStorage.setItem("user", JSON.stringify(userObj));       
+      setUser(userObj);
+      
+      setToken(token.accessToken);     
+      navigate("/dashboard");
+    }
+  } catch (e) {
+    console.error('Login error:', e);
+    
+  }
+
+
+};
+
+
+
+  // const loginUser = async (email: string, password: string) => {
+   
+  //   try {
+  //     const token = await loginAPI(email, password);
+  //     if (token) {
+  //       localStorage.setItem("token", token.accessToken);
+  //       const userObj: User = {        
+  //         id: token.id, // Replace with actual user ID from API response
+  //         fullname: token.fullname,  // Replace with actual user name from API response
+  //         email: email,
+  //         password: "",
+  //         role: token.role as typeof ROLES[keyof typeof ROLES],          
+  //         enabled: true,    // Replace with actual role from API response
+  //         createdAt:""
+  //       };
+  //       console.log(token.role)
+  //       localStorage.setItem("user", JSON.stringify(userObj));       
+  //       setUser(userObj);
+  //       setToken(token.accessToken);
 
 
         
-        navigate("/dashboard");
-      }
-    } catch (e) {
-      console.error('Login error:', e);
+  //       navigate("/dashboard");
+  //     }
+  //   } catch (e) {
+  //     console.error('Login error:', e);
       
-    }
-  };
+  //   }
+  // };
 
   const logout = () => {
     localStorage.removeItem("user")
@@ -148,7 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Helper function to check if user has required role(s)
   const hasPermission = (requiredRole: string | string[]): boolean => {
-    if (!user) return false
+    if (!user?.role) return false
 
     if (Array.isArray(requiredRole)) {
       return requiredRole.includes(user.role)

@@ -7,6 +7,20 @@ import { ROLES } from "../types/roles"
 type HeaderProps = {
   title: string
 }
+const roleDisplayNames = {
+  [ROLES.ADMIN]: "Administrador",
+  [ROLES.PROP]: "Propietario",
+  [ROLES.USER]: "Usuario",
+  [ROLES.CAJERO]: "Cajero",
+}
+
+const roleBadgeClasses = {
+  [ROLES.ADMIN]: "bg-danger",
+  [ROLES.PROP]: "bg-primary",
+  [ROLES.USER]: "bg-secondary",
+  [ROLES.CAJERO]: "bg-primary",
+}
+
 
 export function Header({ title }: HeaderProps) {
   const { logout, user } = useAuth()
@@ -41,18 +55,11 @@ export function Header({ title }: HeaderProps) {
               <div className="fw-medium">{user?.fullname}</div>
               <div className="text-secondary small">
                 {user?.email}
-                {user && (
+                {user && user.role && (
                   <span
-                    className={`badge ms-1 ${
-                      user.role === ROLES.ADMINISTRADOR
-                        ? "bg-danger"
-                        : user.role === ROLES.CAJERO
-                          ? "bg-primary"
-                          : "bg-secondary"
-                    }`}
+                    className={`badge ms-1 ${roleBadgeClasses[user.role as keyof typeof roleBadgeClasses] || "bg-secondary"}`}
                   >
-                    {user.role === ROLES.ADMINISTRADOR ? "Administrador" : user.role === ROLES.CAJERO ? "Cajero" : "Administrador"}
-                     console.log
+                    {roleDisplayNames[user.role as keyof typeof roleDisplayNames] || "Administrador"}
                   </span>
                 )}
               </div>

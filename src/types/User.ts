@@ -63,7 +63,7 @@ export type User = {
   email: string;
   fullname: string;
   password?: string;
-  role: string;
+  role?: string;
   enabled: boolean;
   createdAt: string;
   token?: string;
