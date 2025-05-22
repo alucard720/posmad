@@ -29,14 +29,30 @@ export function Header({ title }: HeaderProps) {
   // Generate initials from user name
   const getInitials = (fullname: string | undefined) => {
     if (!fullname) return "??"
-
+    console.log(fullname)
     return fullname
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .substring(0, 2)
+      
   }
+  const displayRole = user?.role && Object.values(ROLES).includes(user.role)
+  ? roleDisplayNames[user.role]
+  : "Administrador";
+
+const badgeClass = user?.role && Object.values(ROLES).includes(user.role)
+  ? roleBadgeClasses[user.role]
+  : "bg-secondary";
+
+if (user?.role && !Object.values(ROLES).includes(user.role)) {
+  console.warn(`Header: Invalid user role detected: ${user.role}`);
+}
+
+console.log("Header: Rendering user data", {
+  email: user?.email,
+  fullname: user?.fullname,
+  role: user?.role,
+  displayRole,
+});
+
+
 
   return (
     <header className="bg-white shadow-sm p-3 d-flex justify-content-between align-items-center">
@@ -57,9 +73,8 @@ export function Header({ title }: HeaderProps) {
                 {user?.email}
                 {user && user.role && (
                   <span
-                    className={`badge ms-1 ${roleBadgeClasses[user.role as keyof typeof roleBadgeClasses] || "bg-secondary"}`}
-                  >
-                    {roleDisplayNames[user.role as keyof typeof roleDisplayNames] || "Administrador"}
+                    className={`badge ms-1 ${badgeClass}`}>
+                    {displayRole}
                   </span>
                 )}
               </div>

@@ -100,8 +100,7 @@ const loginUser = async (email: string, password: string) => {
         createdAt:""
       };      
       localStorage.setItem("user", JSON.stringify(userObj));       
-      setUser(userObj);
-      
+      setUser(userObj);      
       setToken(token.accessToken);     
       navigate("/dashboard");
     }
