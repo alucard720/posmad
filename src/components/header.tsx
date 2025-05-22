@@ -9,9 +9,10 @@ type HeaderProps = {
 }
 const roleDisplayNames = {
   [ROLES.ADMIN]: "Administrador",
-  [ROLES.PROP]: "Propietario",
-  [ROLES.USER]: "Usuario",
+  [ROLES.USER]: "Propietario",
+  [ROLES.PROP]: "Usuario",
   [ROLES.CAJERO]: "Cajero",
+  [ROLES.SUPER]: "Superuser",
 }
 
 const roleBadgeClasses = {
@@ -19,6 +20,7 @@ const roleBadgeClasses = {
   [ROLES.PROP]: "bg-primary",
   [ROLES.USER]: "bg-secondary",
   [ROLES.CAJERO]: "bg-primary",
+  [ROLES.SUPER]: "bg-primary",
 }
 
 
@@ -33,6 +35,7 @@ export function Header({ title }: HeaderProps) {
     return fullname
       
   }
+<<<<<<< HEAD
   const displayRole = user?.role && Object.values(ROLES).includes(user.role)
   ? roleDisplayNames[user.role]
   : "Administrador";
@@ -54,6 +57,14 @@ console.log("Header: Rendering user data", {
 
 
 
+=======
+  const displayRole = user?.role && Object.values(ROLES).includes(user.role) ? roleDisplayNames[user.role] : "Administrador"
+  const displayRoleBadgeClass = user?.role && Object.values(ROLES).includes(user.role) ? roleBadgeClasses[user.role] : "bg-secondary"
+  if(user?.role && Object.values(ROLES).includes(user.role)){
+    console.warn(`Invalid role: ${user.role}`)
+  }
+  
+>>>>>>> 1f0384bf30343902128227d045e386c7b1550f34
   return (
     <header className="bg-white shadow-sm p-3 d-flex justify-content-between align-items-center">
       <h1 className="fs-4 fw-bold text-dark mb-0">{title}</h1>
@@ -72,10 +83,15 @@ console.log("Header: Rendering user data", {
               <div className="text-secondary small">
                 {user?.email}
                 {user && user.role && (
+<<<<<<< HEAD
                   <span
                     className={`badge ms-1 ${badgeClass}`}>
                     {displayRole}
                   </span>
+=======
+                  <span className={`badge ms-1 ${displayRoleBadgeClass}`}>{displayRole}</span>
+
+>>>>>>> 1f0384bf30343902128227d045e386c7b1550f34
                 )}
               </div>
             </div>

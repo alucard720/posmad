@@ -1,7 +1,11 @@
 import axios from 'axios';
 import { handleError } from "../lib/handleError";
 import type { User } from "../types/User";
+<<<<<<< HEAD
 import { ROLES } from '../types/roles';
+=======
+import { ROLES } from "../types/roles";
+>>>>>>> 1f0384bf30343902128227d045e386c7b1550f34
 // Define types for authentication
 
 
@@ -50,6 +54,7 @@ export const registerAPI = async(fullname: string, email: string,  role: string,
 
 }
 
+<<<<<<< HEAD
 export const loginAPI = async (email: string, password: string) => {
     try {
       // Step 1: Authenticate to get token
@@ -125,6 +130,65 @@ export const loginAPI = async (email: string, password: string) => {
       throw error;
     }
   };
+=======
+export const loginAPI = async(email: string, password: string)=>{
+     try {
+    const loginResponse = await axios.post(
+      api + "/v1/auth/sign-in",
+      { email, password }
+    );
+
+    const accessToken = loginResponse.data?.data?.accessToken || loginResponse.data?.accessToken || loginResponse.data?.Token;
+    if(!accessToken){
+        throw new Error("No access token received from server");
+    }
+    
+    const profileResponse = await axios.get(api + "/v1/auth/profile",{
+        headers:{
+            Authorization: `Bearer ${accessToken}`
+        }
+    });
+    
+    const profileData = profileResponse.data?.data;
+    if(!profileData){
+        throw new Error("No profile data received from server");
+    }
+    
+    const user: User = {
+        id: profileData.id,
+        fullname: profileData.fullname,
+        email: profileData.email,
+        password: "",
+        role: profileData.role,
+        enabled: profileData.enabled,
+        createdAt: profileData.createdAt,
+    }
+    
+    const validateRoles = Object.values(ROLES);
+    if(!validateRoles.includes(profileData.role)){
+        console.error(`Invalid role: ${profileData.role}`);
+        throw new Error("Invalid role");
+    }
+    
+   localStorage.setItem("token", accessToken);
+   localStorage.setItem("user", JSON.stringify(user));
+   axios.defaults.headers.common["Authorization"] = "Bearer " + accessToken;
+   
+   return{
+    accessToken,
+    id: user.id,
+    fullname: user.fullname,
+    email: user.email,
+    role: user.role,
+    enabled: user.enabled,
+    createdAt: user.createdAt,
+   }
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
+};
+>>>>>>> 1f0384bf30343902128227d045e386c7b1550f34
 
 export const refreshTokenAPI = async()=>{
     try {
@@ -147,7 +211,10 @@ export async function authenticateUser(email: string, password: string): Promise
         }
     
         const profileResponse = await axios.get(`${api}/v1/auth/profile`, {
+<<<<<<< HEAD
           params: { email },
+=======
+>>>>>>> 1f0384bf30343902128227d045e386c7b1550f34
           headers: { Authorization: `Bearer ${accessToken}` },
         });
     
@@ -185,15 +252,13 @@ axiosInstance.interceptors.request.use(
         if(error. response.status === 401 && !originalRequest._retry){
             originalRequest._retry = true;
             try {
-                const newAccesstoken = await refreshTokenAPI();
-                localStorage.setItem("token", newAccesstoken);
-                axiosInstance.defaults.headers.common["Authorization"] =`Bearer ${newAccesstoken}`;
+                const newAccesstoken = await refreshTokenAPI();                
                 originalRequest.headers["Authorization"] = `Bearer ${newAccesstoken}`;
                 return axiosInstance(originalRequest);
             } catch (error) {
                 localStorage.removeItem("token");
                 localStorage.removeItem("user");
-                window.location.href = "/dashboard";
+                window.location.href = "/login";
                 return Promise.reject(error);
             }
     }

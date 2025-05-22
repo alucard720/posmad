@@ -8,14 +8,14 @@ import { ROLES } from "../types/roles"
 
 
 
-interface JwtPayload {
-    user: {
-        id: string;
-        role: string;
-    };
-    iat: number;
-    exp: number;
-}
+// interface JwtPayload {
+//     user: {
+//         id: string;
+//         role: string;
+//     };
+//     iat: number;
+//     exp: number;
+// }
 
 type AuthContextType = {
   user: User | null
@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(token);
       axios.defaults.headers.common["Authorization"] = "Bearer " + token;
     }
-    setIsLoading(true);
+    setIsLoading(false);
   }, []);
 
 
@@ -93,8 +93,8 @@ const loginUser = async (email: string, password: string) => {
       const userObj: User = {        
         id: token.id, 
         fullname: token.fullname, 
-        email: email,
-        password: password,
+        email: token.email,
+        password: "",
         role: token.role as typeof ROLES[keyof typeof ROLES],          
         enabled: true,    
         createdAt:""
@@ -148,6 +148,7 @@ const loginUser = async (email: string, password: string) => {
     localStorage.removeItem("user")
     document.cookie = "auth-token=; path=/; max-age=0"
     document.cookie = "user-role=; path=/; max-age=0"
+    delete axios.defaults.headers.common["Authorization"];
     setUser(null)
     navigate("/")
   }
@@ -178,7 +179,7 @@ const loginUser = async (email: string, password: string) => {
         setToken
       }}
     >
-      {isLoading ? children : null}
+      {isLoading ? null : children}
     </AuthContext.Provider>
   )
 }

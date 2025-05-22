@@ -1,8 +1,9 @@
 export const ROLES ={
-    ADMIN: "Administrador",
-    PROP: "Propierario",
-    USER: "Usuario",
-    CAJERO: "Cajero"
+    ADMIN : "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    USER : "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+    PROP: "propietario",
+    CAJERO:"cajero",
+    SUPER:"superuser"
 };
 
 export const PERMISSIONS = {
@@ -43,5 +44,5 @@ export const PERMISSIONS = {
 export const ROLE_PERMISSIONS: Record<string, string[]> = {
     ADMINISTRADOR: ["view_dashboard", "view_products", "edit_products", "delete_products", "view_users", "edit_users", "delete_users", "view_roles", "edit_roles", "delete_roles", "view_permissions", "edit_permissions", "delete_permissions", "view_orders", "edit_orders", "delete_orders", "view_customers", "edit_customers", "delete_customers", "view_sales", "edit_sales", "delete_sales", "view_purchases", "edit_purchases", "delete_purchases", "view_reports", "edit_reports", "delete_reports", "view_settings", "edit_settings", "delete_settings"],
     CAJERO: ["view_dashboard", "view_products"],
-    // PROPIETARIO: ["view_dashboard", "view_products", "edit_products", "delete_products", "view_users", "edit_users", "delete_users", "view_roles", "edit_roles", "delete_roles", "view_permissions", "edit_permissions", "delete_permissions", "view_orders", "edit_orders", "delete_orders", "view_customers", "edit_customers", "delete_customers", "view_sales", "edit_sales", "delete_sales", "view_purchases", "edit_purchases", "delete_purchases", "view_reports", "edit_reports", "delete_reports", "view_settings", "edit_settings", "delete_settings"],
+    // PROP: ["view_dashboard", "view_products", "edit_products", "delete_products", "view_users", "edit_users", "delete_users", "view_roles", "edit_roles", "delete_roles", "view_permissions", "edit_permissions", "delete_permissions", "view_orders", "edit_orders", "delete_orders", "view_customers", "edit_customers", "delete_customers", "view_sales", "edit_sales", "delete_sales", "view_purchases", "edit_purchases", "delete_purchases", "view_reports", "edit_reports", "delete_reports", "view_settings", "edit_settings", "delete_settings"],
 };

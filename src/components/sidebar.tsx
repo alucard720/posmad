@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { useAuth } from "../contexts/auth-context"
-import { ROLE_PERMISSIONS } from "../types/User"
+import { ROLE_PERMISSIONS } from "../types/roles"
 
 // Define menu items with role-based access
 const menuItems = [
