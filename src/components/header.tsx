@@ -7,6 +7,22 @@ import { ROLES } from "../types/roles"
 type HeaderProps = {
   title: string
 }
+const roleDisplayNames = {
+  [ROLES.ADMIN]: "Administrador",
+  [ROLES.USER]: "Propietario",
+  [ROLES.PROP]: "Usuario",
+  [ROLES.CAJERO]: "Cajero",
+  [ROLES.SUPER]: "Superuser",
+}
+
+const roleBadgeClasses = {
+  [ROLES.ADMIN]: "bg-danger",
+  [ROLES.PROP]: "bg-primary",
+  [ROLES.USER]: "bg-secondary",
+  [ROLES.CAJERO]: "bg-primary",
+  [ROLES.SUPER]: "bg-primary",
+}
+
 
 export function Header({ title }: HeaderProps) {
   const { logout, user } = useAuth()
@@ -23,7 +39,12 @@ export function Header({ title }: HeaderProps) {
       .toUpperCase()
       .substring(0, 2)
   }
-
+  const displayRole = user?.role && Object.values(ROLES).includes(user.role) ? roleDisplayNames[user.role] : "Administrador"
+  const displayRoleBadgeClass = user?.role && Object.values(ROLES).includes(user.role) ? roleBadgeClasses[user.role] : "bg-secondary"
+  if(user?.role && Object.values(ROLES).includes(user.role)){
+    console.warn(`Invalid role: ${user.role}`)
+  }
+  
   return (
     <header className="bg-white shadow-sm p-3 d-flex justify-content-between align-items-center">
       <h1 className="fs-4 fw-bold text-dark mb-0">{title}</h1>
@@ -41,19 +62,9 @@ export function Header({ title }: HeaderProps) {
               <div className="fw-medium">{user?.fullname}</div>
               <div className="text-secondary small">
                 {user?.email}
-                {user && (
-                  <span
-                    className={`badge ms-1 ${
-                      user.role === ROLES.SUPER
-                        ? "bg-danger"
-                        : user.role === ROLES.CAJERO
-                          ? "bg-primary"
-                          : "bg-secondary"
-                    }`}
-                  >
-                    {user.role === ROLES.SUPER ? "Superuser" : user.role === ROLES.CAJERO ? "Cajero" : "Propietario"}
-                    
-                  </span>
+                {user && user.role && (
+                  <span className={`badge ms-1 ${displayRoleBadgeClass}`}>{displayRole}</span>
+
                 )}
               </div>
             </div>

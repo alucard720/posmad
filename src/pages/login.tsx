@@ -12,7 +12,7 @@ import { faWineBottle } from "@fortawesome/free-solid-svg-icons"
 type SignupFormData = {
   email: string;
   password: string;
-  accessToken?: string;
+ 
 };
 const signupSchema = Yup.object().shape({
   email: Yup.string().required("Correo Requerido").email("Correo invalido"),

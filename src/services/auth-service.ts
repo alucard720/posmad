@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { handleError } from "../lib/handleError";
+import type { User } from "../types/User";
+import { ROLES } from "../types/roles";
 // Define types for authentication
 
 
@@ -20,7 +22,7 @@ const axiosInstance = axios.create({
 
 export const registerAPI = async(fullname: string, email: string,  role: string, enable:string)=>{
     try {
-        const response = await axios.post( api + "/v1/users", {
+        const response = await axios.post( api + "/v1/auth/sign-up", {
             fullname,
             email,
             role,
@@ -50,32 +52,56 @@ export const registerAPI = async(fullname: string, email: string,  role: string,
 
 export const loginAPI = async(email: string, password: string)=>{
      try {
-    const response = await axios.post(
+    const loginResponse = await axios.post(
       api + "/v1/auth/sign-in",
       { email, password }
     );
-    if(!response){
-        throw new Error("intente de nuevo")
-    }else{
-       console.log("LoginAPi response:", response.data);
+
+    const accessToken = loginResponse.data?.data?.accessToken || loginResponse.data?.accessToken || loginResponse.data?.Token;
+    if(!accessToken){
+        throw new Error("No access token received from server");
     }
     
-    // Check if the response contains the access token and user data
-    const accessToken = response.data.accessToken || response.data.token || response.data.data?.accessToken;
-    const user = response.data.user || response.data.data?.user;
-
-    if (!accessToken) {
-      throw new Error("No access token received from server");
-       }   
-
-    localStorage.setItem("token", accessToken);
-    if (user) {
-        localStorage.setItem("user", JSON.stringify(user));
-    }  
+    const profileResponse = await axios.get(api + "/v1/auth/profile",{
+        headers:{
+            Authorization: `Bearer ${accessToken}`
+        }
+    });
     
-    axiosInstance.defaults.headers.common["Authorization"] = `Bearer + ${accessToken}`;
-
-    return accessToken;
+    const profileData = profileResponse.data?.data;
+    if(!profileData){
+        throw new Error("No profile data received from server");
+    }
+    
+    const user: User = {
+        id: profileData.id,
+        fullname: profileData.fullname,
+        email: profileData.email,
+        password: "",
+        role: profileData.role,
+        enabled: profileData.enabled,
+        createdAt: profileData.createdAt,
+    }
+    
+    const validateRoles = Object.values(ROLES);
+    if(!validateRoles.includes(profileData.role)){
+        console.error(`Invalid role: ${profileData.role}`);
+        throw new Error("Invalid role");
+    }
+    
+   localStorage.setItem("token", accessToken);
+   localStorage.setItem("user", JSON.stringify(user));
+   axios.defaults.headers.common["Authorization"] = "Bearer " + accessToken;
+   
+   return{
+    accessToken,
+    id: user.id,
+    fullname: user.fullname,
+    email: user.email,
+    role: user.role,
+    enabled: user.enabled,
+    createdAt: user.createdAt,
+   }
   } catch (error) {
     handleError(error);
     throw error;
@@ -93,6 +119,43 @@ export const refreshTokenAPI = async()=>{
     }
 }
 
+export async function authenticateUser(email: string, password: string): Promise<User | null> {
+    try {
+        const loginResponse = await axios.post(`${api}/v1/auth/sign-in`, { email, password });
+        const accessToken = loginResponse.data?.data?.accessToken || loginResponse.data?.accessToken || loginResponse.data?.token;
+    
+        if (!accessToken) {
+          throw new Error("No access token received from server");
+        }
+    
+        const profileResponse = await axios.get(`${api}/v1/auth/profile`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+    
+        const profileData = profileResponse.data?.data;
+    
+        if (!profileData) {
+          throw new Error("No profile data received");
+        }
+    
+        const user: User = {
+          id: profileData.id,
+          email: profileData.email,
+          fullname: profileData.fullname,
+          role: profileData.role,
+          enabled: profileData.enabled,
+          createdAt: profileData.createdAt,
+          password: "",
+        };
+    
+        return user;
+      } catch (error) {
+        console.error("Error authenticating user:", error);
+        handleError(error);
+        return null;
+      }
+}
+
 
 
 
@@ -103,15 +166,13 @@ axiosInstance.interceptors.request.use(
         if(error. response.status === 401 && !originalRequest._retry){
             originalRequest._retry = true;
             try {
-                const newAccesstoken = await refreshTokenAPI();
-                localStorage.setItem("token", newAccesstoken);
-                axiosInstance.defaults.headers.common["Authorization"] =`Bearer ${newAccesstoken}`;
+                const newAccesstoken = await refreshTokenAPI();                
                 originalRequest.headers["Authorization"] = `Bearer ${newAccesstoken}`;
                 return axiosInstance(originalRequest);
             } catch (error) {
                 localStorage.removeItem("token");
                 localStorage.removeItem("user");
-                window.location.href = "/dashboard";
+                window.location.href = "/login";
                 return Promise.reject(error);
             }
     }

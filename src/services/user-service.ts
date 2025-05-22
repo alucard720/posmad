@@ -15,14 +15,14 @@ import type { User } from "../types/User"
 // }
 
 // MockAPI URL - replace with your actual MockAPI endpoint
-const API_URL = "http://localhost:8184/v1/auth/profile"
+const API_URL = "http://localhost:8184/v1/users"
 
 // Get all users
 export async function fetchUsers(): Promise<User[]> {
   try {
     const response = await axios.get(API_URL)
 
-    return response.data || []
+    return response.data?.data?.records || []
   } catch (error) {
     console.error("Error fetching users:", error)
     return []
@@ -79,17 +79,48 @@ export async function deleteUser(id: string): Promise<boolean> {
 }
 
 // Authenticate a user
-export async function authenticateUser(email: string, password: string): Promise<{user: User, token: string} | null> {
-  try {
-    const response = await axios.post(`${API_URL}/login`, { email, password })
+// export async function authenticateUser(email: string, fullname: string): Promise<{user: User, token: string} | null> {
+//  try {
+//   const loginResponse = await axios.post(`${API_URL}/v1/auth/sign-in`, {email, fullname});
+//   const token = loginResponse.data?.data?.accessToken || loginResponse.data?.token;
 
-    const {user, token} = response.data?.data?.records || null
+//   if (!token) {
+//     throw new Error("No access token received from server");
+//   }
+//    const profileData = await axios.get(`${API_URL}/v1/auth/profile`,{
+//     headers:{
+//       Authorization: `Bearer ${token}`
+//     }
+//    });
 
-    return {user, token}
-  } catch (error) {
-    console.error("Error authenticating user:", error)
-    return null
-  }
-}
+//    if(!profileData){
+//     throw new Error("No profile data received from server");
+//    }
+
+//    const user: User = {
+//     id: profileData.data.id,
+//     fullname: profileData.data.fullname,
+//     email: profileData.data.email,
+//     password: "",
+//     role: profileData.data.role,
+//     enabled: profileData.data.enabled,
+//     createdAt: profileData.data.createdAt,
+    
+//    }
+
+//    //valida los roles
+//    const validRoles = Object.values(ROLES);
+//    if(!validRoles.includes(user.role)){
+//     console.error(`Invalid role: ${user.role}`);
+//     throw new Error("Invalid role");
+//    }
+
+//    return {user, token};
+//  } catch (error) {
+//     console.error("Error authenticating user:", error);
+//     return null;
+  
+//  }
+// }
 
 
