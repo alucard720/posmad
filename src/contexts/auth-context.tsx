@@ -4,18 +4,11 @@ import type { User } from "../types/User"
 import { loginAPI } from "../services/auth-service"
 import axios from "axios";
 import { createUser } from "../services/user-service"
-import { ROLES } from "../types/roles"
+import { ROLES } from "../types/roles" 
 
 
 
-// interface JwtPayload {
-//     user: {
-//         id: string;
-//         role: string;
-//     };
-//     iat: number;
-//     exp: number;
-// }
+
 
 type AuthContextType = {
   user: User | null
@@ -115,35 +108,7 @@ const loginUser = async (email: string, password: string) => {
 
 
 
-  // const loginUser = async (email: string, password: string) => {
-   
-  //   try {
-  //     const token = await loginAPI(email, password);
-  //     if (token) {
-  //       localStorage.setItem("token", token.accessToken);
-  //       const userObj: User = {        
-  //         id: token.id, // Replace with actual user ID from API response
-  //         fullname: token.fullname,  // Replace with actual user name from API response
-  //         email: email,
-  //         password: "",
-  //         role: token.role as typeof ROLES[keyof typeof ROLES],          
-  //         enabled: true,    // Replace with actual role from API response
-  //         createdAt:""
-  //       };
-  //       console.log(token.role)
-  //       localStorage.setItem("user", JSON.stringify(userObj));       
-  //       setUser(userObj);
-  //       setToken(token.accessToken);
 
-
-        
-  //       navigate("/dashboard");
-  //     }
-  //   } catch (e) {
-  //     console.error('Login error:', e);
-      
-  //   }
-  // };
 
   const logout = () => {
     localStorage.removeItem("user")

@@ -1,9 +1,9 @@
 export const ROLES ={
-    ADMIN : "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-    USER : "7c9e6679-7425-40de-944b-e07fc1f90ae7",
-    PROP: "propietario",
-    CAJERO:"cajero",
-    SUPER:"superuser"
+    ADMIN: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    USER: "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+    CAJERO: "7c9e6679-7425-40de-944b-e07fc1f907c9",
+    ALMACENISTA: "7c9e6679-7425-40de-944b-e07fc1f907ca",
+    PROPIETARIO: "7c9e6679-7425-40de-944b-e07fc1f907cb",
 };
 
 export const PERMISSIONS = {

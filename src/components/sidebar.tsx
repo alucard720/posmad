@@ -1,22 +1,29 @@
 import { useEffect, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { useAuth } from "../contexts/auth-context"
-import { ROLE_PERMISSIONS } from "../types/roles"
+import { ROLES } from "../types/roles"
 
+const roleDisplayNames = {
+  [ROLES.ADMIN]: "Administrador",
+  [ROLES.USER]: "Usuario",
+  [ROLES.PROPIETARIO]: "Propietario",
+  [ROLES.CAJERO]: "Cajero",
+  [ROLES.ALMACENISTA]: "Almacenista",
+}
 // Define menu items with role-based access
 const menuItems = [
   {
     href: "/",
     icon: "fa-check-circle",
     label: "Vender",
-    roles: [ROLE_PERMISSIONS.administrador, ROLE_PERMISSIONS.cajero],
+    roles: [ROLES.ADMIN, ROLES.CAJERO, ROLES.ALMACENISTA, ROLES.PROPIETARIO, ROLES.USER],
     highlight: true,
   },
   {
     href: "/demo",
     icon: "fa-shopping-cart",
     label: "Demo Pagos",
-    roles: [ROLE_PERMISSIONS.administrador, ROLE_PERMISSIONS.cajero],
+    roles: [ROLES.ADMIN, ROLES.CAJERO],
   },
   // {
   //   href: "/pedidos",
@@ -28,25 +35,25 @@ const menuItems = [
     href: "/productos",
     icon: "fa-th",
     label: "Productos",
-    roles: [ROLE_PERMISSIONS.administrador, ROLE_PERMISSIONS.cajero],
+    roles: [ROLES.ADMIN, ROLES.CAJERO, ROLES.ALMACENISTA, ROLES.PROPIETARIO, ROLES.USER],
   },
   {
     href: "/catalogo",
     icon: "fa-list",
     label: "Catálogo",
-    roles: [ROLE_PERMISSIONS.administrador, ROLE_PERMISSIONS.cajero],
+    roles: [ROLES.ADMIN, ROLES.CAJERO],
   },
   {
     href: "/clientes",
     icon: "fa-users",
     label: "Clientes",
-    roles: [ROLE_PERMISSIONS.administrador, ROLE_PERMISSIONS.cajero],
+    roles: [ROLES.ADMIN, ROLES.PROPIETARIO],
   },
   {
     href: "/transacciones",
     icon: "fa-exchange-alt",
     label: "Transacciones",
-    roles: [ROLE_PERMISSIONS.administrador, ROLE_PERMISSIONS.cajero],
+    roles: [ROLES.ADMIN, ROLES.PROPIETARIO],
   },
   // {
   //   href: "/finanzas",
@@ -70,13 +77,13 @@ const menuItems = [
     href: "/user",
     icon: "fa-user-cog",
     label: "Gestión Usuarios",
-    roles: [ROLE_PERMISSIONS.administrador],
+    roles: [ROLES.ADMIN],
   },
   {
     href: "/configuraciones",
     icon: "fa-cog",
     label: "Configuraciones",
-    roles: [ROLE_PERMISSIONS.administrador],
+    roles: [ROLES.ADMIN],
   },
 ]
 
@@ -165,13 +172,12 @@ export default function Sidebar() {
           {/* Role indicator */}
           <div className={`text-center mb-2 px-2 ${expanded ? "d-block" : "d-none"}`}>
             <span
-              className={`badge ${user?.role === "ADMINISTRADOR" ? "bg-danger" : user?.role === "CAJERO" ? "bg-primary" : "bg-secondary"} text-white`}
+              className={`badge ${user?.role === ROLES.ADMIN ? "bg-danger"
+              : [ROLES.CAJERO, ROLES.ALMACENISTA, ROLES.PROPIETARIO].includes(user?.role ?? "") ? "bg-primary"
+                : "bg-secondary"
+              } text-white`}
             >
-              {user?.role === "ADMINISTRADOR"
-                ? "Propietario"
-                : user?.role === "CAJERO"
-                  ? "Administrador"
-                  : "Cajero"}
+              {/* {user?.role && roleDisplayNames[user.role] ? roleDisplayNames[user.role] : "Rol desconocido"} */}
             </span>
           </div>
 
