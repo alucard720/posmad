@@ -36,13 +36,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const user = localStorage.getItem("user");
     const token = localStorage.getItem("token");
     if (user && token) {
-      setUser(JSON.parse(user));
+      const parserUser = JSON.parse(user);
+      console.log("AuthProvider: parserUser", {
+        email: parserUser.email,
+        fullname: parserUser.fullname,
+        role: parserUser.role,
+        
+      });     
+      setUser(parserUser);
       setToken(token);
-      axios.defaults.headers.common["Authorization"] = "Bearer " + token;
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     }
     setIsLoading(false);
   }, []);
-
 
 
   const register = async (
@@ -80,7 +86,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 const loginUser = async (email: string, password: string) => {
    
   try {
+    setIsLoading(true);
+    console.log("loginUser: email", { email } );
     const token = await loginAPI(email, password);
+    console.log("loginUser : token data",{
+      email: token.email,
+      fullname: token.fullname,
+      role: token.role,      
+    })    
     if (token) {
       localStorage.setItem("token", token.accessToken);        
       const userObj: User = {        
@@ -93,9 +106,10 @@ const loginUser = async (email: string, password: string) => {
         createdAt:""
       };      
       localStorage.setItem("user", JSON.stringify(userObj));       
-      setUser(userObj);
-      
-      setToken(token.accessToken);     
+      setUser(userObj);      
+      setToken(token.accessToken);
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token.accessToken}`; 
+      console.log("loginUser: axios.defaults.headers.common", axios.defaults.headers.common);
       navigate("/dashboard");
     }
   } catch (e) {
@@ -108,25 +122,52 @@ const loginUser = async (email: string, password: string) => {
 
 
 
+  // const loginUser = async (email: string, password: string) => {
+   
+  //   try {
+  //     const token = await loginAPI(email, password);
+  //     if (token) {
+  //       localStorage.setItem("token", token.accessToken);
+  //       const userObj: User = {        
+  //         id: token.id, // Replace with actual user ID from API response
+  //         fullname: token.fullname,  // Replace with actual user name from API response
+  //         email: email,
+  //         password: "",
+  //         role: token.role as typeof ROLES[keyof typeof ROLES],          
+  //         enabled: true,    // Replace with actual role from API response
+  //         createdAt:""
+  //       };
+  //       console.log(token.role)
+  //       localStorage.setItem("user", JSON.stringify(userObj));       
+  //       setUser(userObj);
+  //       setToken(token.accessToken);
 
+
+        
+  //       navigate("/dashboard");
+  //     }
+  //   } catch (e) {
+  //     console.error('Login error:', e);
+      
+  //   }
+  // };
 
   const logout = () => {
     localStorage.removeItem("user")
     document.cookie = "auth-token=; path=/; max-age=0"
     document.cookie = "user-role=; path=/; max-age=0"
     delete axios.defaults.headers.common["Authorization"];
-    setUser(null)
+    setUser(null);
+    setToken(null);
     navigate("/")
   }
 
   // Helper function to check if user has required role(s)
   const hasPermission = (requiredRole: string | string[]): boolean => {
     if (!user?.role) return false
-
     if (Array.isArray(requiredRole)) {
       return requiredRole.includes(user.role)
     }
-
     return user.role === requiredRole
   }
 

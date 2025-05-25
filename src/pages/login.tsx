@@ -1,9 +1,10 @@
 "use client"
 
 import type React from "react"
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { useAuth } from "../contexts/auth-context"
-import {loginAPI} from "../services/auth-service"
+// import {loginAPI} from "../services/auth-service"
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -21,6 +22,7 @@ const signupSchema = Yup.object().shape({
 
   
 const LoginPage: React.FC = () => {  
+  const [error, setError] = useState<string | null>(null);
   const { loginUser } = useAuth();
   const {
     register,
@@ -32,8 +34,9 @@ const LoginPage: React.FC = () => {
 
   const onSubmit = async (form: SignupFormData) => {
     try {
-      await loginAPI(form.email, form.password); // <-- just call loginAPI (no axios.post manually)
-      loginUser(form.email, form.password);      // <-- then update your context
+      setError(null);
+      console.log("onSubmit: Login API", {email: form.email, });
+      await loginUser(form.email, form.password);          
     } catch (error) {
       console.error("Error during login:", error);
     } 

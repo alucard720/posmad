@@ -30,20 +30,20 @@ export function Header({ title }: HeaderProps) {
 
   // Generate initials from user name
   const getInitials = (fullname: string | undefined) => {
-    if (!fullname) return "";
+    if (!fullname) return "??"
+
     return fullname
       .split(" ")
       .map((n) => n[0])
       .join("")
       .toUpperCase()
-      .substring(0, 2);
+      .substring(0, 2)
   }
   const displayRole = user?.role && Object.values(ROLES).includes(user.role) ? roleDisplayNames[user.role] : "Administrador"
   const displayRoleBadgeClass = user?.role && Object.values(ROLES).includes(user.role) ? roleBadgeClasses[user.role] : "bg-secondary"
-  if (user?.role && !Object.values(ROLES).includes(user.role)) {
+  if(user?.role && Object.values(ROLES).includes(user.role)){
     console.warn(`Invalid role: ${user.role}`)
   }
-  
   
   return (
     <header className="bg-white shadow-sm p-3 d-flex justify-content-between align-items-center">
@@ -63,7 +63,10 @@ export function Header({ title }: HeaderProps) {
               <div className="text-secondary small">
                 {user?.email}
                 {user && user.role && (
-                  <span className={`badge ms-1 ${displayRoleBadgeClass}`}>{displayRole}</span>
+                  <span
+                    className={`badge ms-1 ${badgeClass}`}>
+                    {displayRole}
+                  </span>
 
                 )}
               </div>
