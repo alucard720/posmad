@@ -1,4 +1,4 @@
-import axios from "axios"
+import axiosInstance from "./auth-service"
 import type { User } from "../types/User"
 
 // // Define user types
@@ -20,9 +20,19 @@ const API_URL = "http://localhost:8184/v1/users"
 // Get all users
 export async function fetchUsers(): Promise<User[]> {
   try {
-    const response = await axios.get(API_URL)
+    console.log("fetchUsers: Sending GET request to", API_URL)
+    const response = await axiosInstance.get(API_URL)
+    console.log("fetchUsers: Response from", API_URL, response.data)
 
-    return response.data?.data?.records || []
+    const users = response.data?.data?.records || []
+
+
+    if(!Array.isArray(users)){
+      console.error("fetchUsers: Invalid response format. Expected array, got:", users)
+      return []
+    }
+
+    return users
   } catch (error) {
     console.error("Error fetching users:", error)
     return []
@@ -32,7 +42,7 @@ export async function fetchUsers(): Promise<User[]> {
 // Get user by ID
 export async function fetchUserById(id: string): Promise<User | null> {
   try {
-    const response = await axios.get(`${API_URL}/${id}`)
+    const response = await axiosInstance.get(`${API_URL}/${id}`)
 
     return response.data?.data?.records || null
   } catch (error) {
@@ -44,7 +54,7 @@ export async function fetchUserById(id: string): Promise<User | null> {
 // Create a new user
 export async function createUser(user: Omit<User, "id">): Promise<User | null> {
   try {
-    const response = await axios.post(API_URL, user)
+    const response = await axiosInstance.post(API_URL, user)
 
     return response.data?.data?.records || null
   } catch (error) {
@@ -56,7 +66,7 @@ export async function createUser(user: Omit<User, "id">): Promise<User | null> {
 // Update an existing user
 export async function updateUser(id: string, updates: Partial<User>): Promise<User | null> {
   try {
-    const response = await axios.put(`${API_URL}/${id}`, updates)
+    const response = await axiosInstance.put(`${API_URL}/${id}`, updates)
 
     return response.data?.data?.records || null
 
@@ -69,7 +79,7 @@ export async function updateUser(id: string, updates: Partial<User>): Promise<Us
 // Delete a user
 export async function deleteUser(id: string): Promise<boolean> {
   try {
-    const response = await axios.delete(`${API_URL}/${id}`)
+    const response = await axiosInstance.delete(`${API_URL}/${id}`)
 
     return response.data?.data?.records || false
   } catch (error) {

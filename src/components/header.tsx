@@ -15,7 +15,7 @@ const roleDisplayNames = {
   [ROLES.ALMACENISTA]: "Almacenista",
 }
 
-const roleBadgeClasses = {
+const badgeClasses = {
   [ROLES.ADMIN]: "bg-danger",
   [ROLES.USER]: "bg-secondary",
   [ROLES.CAJERO]: "bg-primary",
@@ -40,7 +40,7 @@ export function Header({ title }: HeaderProps) {
       .substring(0, 2)
   }
   const displayRole = user?.role && Object.values(ROLES).includes(user.role) ? roleDisplayNames[user.role] : "Administrador"
-  const displayRoleBadgeClass = user?.role && Object.values(ROLES).includes(user.role) ? roleBadgeClasses[user.role] : "bg-secondary"
+  const displaybadgeClass = user?.role && Object.values(ROLES).includes(user.role) ? badgeClasses[user.role] : "bg-secondary"
   if(user?.role && Object.values(ROLES).includes(user.role)){
     console.warn(`Invalid role: ${user.role}`)
   }
@@ -64,7 +64,7 @@ export function Header({ title }: HeaderProps) {
                 {user?.email}
                 {user && user.role && (
                   <span
-                    className={`badge ms-1 ${badgeClass}`}>
+                    className={`badge ms-1 ${badgeClasses}`}>
                     {displayRole}
                   </span>
 

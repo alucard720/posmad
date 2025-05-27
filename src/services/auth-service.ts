@@ -52,11 +52,11 @@ export const registerAPI = async(fullname: string, email: string,  role: string,
 
 export const fetchProfile = async (accessToken: string): Promise<User> => {
   try {
-    console.log("fetchProfile: Sending /v1/auth/profile request with token", accessToken);
+        // console.log("fetchProfile: Sending /v1/auth/profile request with token", accessToken);
     const profileResponse = await axios.get(`${api}/v1/auth/profile`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
-    console.log("fetchProfile: /v1/auth/profile response", profileResponse.data);
+    // console.log("fetchProfile: /v1/auth/profile response", profileResponse.data);
 
     const profileData = profileResponse.data?.data;
 
@@ -104,16 +104,16 @@ export const fetchProfile = async (accessToken: string): Promise<User> => {
 export const loginAPI = async (email: string, password: string) => {
     try {
       // Step 1: Authenticate to get token
-      console.log("loginAPI: Sending /v1/auth/sign-in request", { email });
+      // console.log("loginAPI: Sending /v1/auth/sign-in request", { email });
       const loginResponse = await axios.post(`${api}/v1/auth/sign-in`, { email, password });
-      console.log("loginAPI: /v1/auth/sign-in response", loginResponse.data);
+      // console.log("loginAPI: /v1/auth/sign-in response", loginResponse.data);
       
       const accessToken = loginResponse.data?.data?.accessToken || loginResponse.data?.accessToken || loginResponse.data?.token;
       
       if (!accessToken) {
         throw new Error("No access token received from server");
       }
-      console.log("loginAPI: Access token", accessToken);
+      // console.log("loginAPI: Access token", accessToken);
   
       const user = await fetchProfile(accessToken);
 

@@ -1,17 +1,18 @@
-"use client"
-
 import type React from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
 import { useAuth } from "../contexts/auth-context"
 import { fetchUsers, createUser, updateUser, deleteUser } from "../services/user-service"
 import type { User } from "../types/User"
+import { ROLES } from "../types/roles"
+
 
 interface UserManagementProps {
   compact?: boolean
 }
 
 export function UserManagement({ compact = false }: UserManagementProps) {
+  const {user, isAuthenticated, hasPermission, isLoading: authLoading, register} = useAuth()
   const [users, setUsers] = useState<User[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [showModal, setShowModal] = useState(false)
@@ -32,8 +33,7 @@ export function UserManagement({ compact = false }: UserManagementProps) {
     enabled: true,
   })
 
-  const { register } = useAuth()
-
+  const navigate = useNavigate()
   // Fetch users on component mount
   useEffect(() => {
     const loadUsers = async () => {
@@ -57,7 +57,7 @@ export function UserManagement({ compact = false }: UserManagementProps) {
     (user) =>
       user.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.role.toLowerCase().includes(searchTerm.toLowerCase()),
+      Object.values(ROLES).includes(user.role as typeof ROLES[keyof typeof ROLES]),
   )
 
   // For compact mode, limit to 5 users
@@ -84,7 +84,7 @@ export function UserManagement({ compact = false }: UserManagementProps) {
       id: user.id,
       name: user.fullname,
       email: user.email,
-      role: user.role,
+      role: user.role as typeof ROLES[keyof typeof ROLES],
       password: "", // We don't show the password when editing
       enabled: user.enabled,
     })

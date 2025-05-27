@@ -3,13 +3,7 @@ import { Link, useLocation } from "react-router-dom"
 import { useAuth } from "../contexts/auth-context"
 import { ROLES } from "../types/roles"
 
-const roleDisplayNames = {
-  [ROLES.ADMIN]: "Administrador",
-  [ROLES.USER]: "Usuario",
-  [ROLES.PROPIETARIO]: "Propietario",
-  [ROLES.CAJERO]: "Cajero",
-  [ROLES.ALMACENISTA]: "Almacenista",
-}
+
 // Define menu items with role-based access
 const menuItems = [
   {
@@ -130,7 +124,7 @@ export default function Sidebar() {
       <div
         className={`sidebar ${expanded ? "expanded" : ""}`}
         style={{
-          width: expanded ? "240px" : "70px",
+          width: expanded ? "210px" : "70px",
           transition: "width 0.3s ease",
           zIndex: 1050,
         }}
