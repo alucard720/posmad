@@ -4,7 +4,7 @@ export const ROLES ={
     CAJERO: "7c9e6679-7425-40de-944b-e07fc1f907c9",
     ALMACENISTA: "7c9e6679-7425-40de-944b-e07fc1f907ca",
     PROPIETARIO: "7c9e6679-7425-40de-944b-e07fc1f907cb",
-};
+} as const;
 
 export const PERMISSIONS = {
    VIEW_DASHBOARD: "view_dashboard",

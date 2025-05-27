@@ -37,7 +37,7 @@ export const registerAPI = async(fullname: string, email: string,  role: string,
             
         };
 
-        console.log("datawithToken:", datawithToken);
+        // console.log("datawithToken:", datawithToken);
 
         await axiosInstance.post(api + "tokens",datawithToken);
         return datawithToken;   
@@ -64,11 +64,11 @@ export const fetchProfile = async (accessToken: string): Promise<User> => {
       throw new Error("No profile data received");
     }
 
-    console.log("fetchProfile: Extracted profile data", {
-      email: profileData.email,
-      fullname: profileData.fullname,
-      role: profileData.role,
-    });
+    // console.log("fetchProfile: Extracted profile data", {
+    //   email: profileData.email,
+    //   fullname: profileData.fullname,
+    //   role: profileData.role,
+    // });
 
     const user: User = {
       id: profileData.id,

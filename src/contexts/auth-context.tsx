@@ -25,7 +25,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate()
   
   // Check if user is logged in on initial load
@@ -84,6 +84,7 @@ const loginUser = async (email: string, password: string) => {
    
   try {
     setIsLoading(false);
+    
     // console.log("loginUser: email", { email } );
     const token = await loginAPI(email, password);
     // console.log("loginUser : token data",{
@@ -113,11 +114,7 @@ const loginUser = async (email: string, password: string) => {
     console.error('Login error:', e);
     
   }
-
-
 };
-
-
 
   const logout = () => {
     localStorage.removeItem("user")

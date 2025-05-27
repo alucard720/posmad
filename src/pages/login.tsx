@@ -35,7 +35,7 @@ const LoginPage: React.FC = () => {
   const onSubmit = async (form: SignupFormData) => {
     try {
       setError(null);
-      console.log("onSubmit: Login API", {email: form.email, });
+      // console.log("onSubmit: Login API", {email: form.email, });
       await loginUser(form.email, form.password);          
     } catch (error) {
       console.error("Error during login:", error);
