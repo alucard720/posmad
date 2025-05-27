@@ -7,9 +7,6 @@ import { createUser } from "../services/user-service"
 import { ROLES } from "../types/roles" 
 
 
-
-
-
 type AuthContextType = {
   user: User | null
   isLoading: boolean
@@ -86,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 const loginUser = async (email: string, password: string) => {
    
   try {
-    setIsLoading(true);
+    setIsLoading(false);
     // console.log("loginUser: email", { email } );
     const token = await loginAPI(email, password);
     // console.log("loginUser : token data",{

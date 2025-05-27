@@ -41,8 +41,50 @@ export const PERMISSIONS = {
 };
 
 
-export const ROLE_PERMISSIONS: Record<string, string[]> = {
-    ADMINISTRADOR: ["view_dashboard", "view_products", "edit_products", "delete_products", "view_users", "edit_users", "delete_users", "view_roles", "edit_roles", "delete_roles", "view_permissions", "edit_permissions", "delete_permissions", "view_orders", "edit_orders", "delete_orders", "view_customers", "edit_customers", "delete_customers", "view_sales", "edit_sales", "delete_sales", "view_purchases", "edit_purchases", "delete_purchases", "view_reports", "edit_reports", "delete_reports", "view_settings", "edit_settings", "delete_settings"],
-    CAJERO: ["view_dashboard", "view_products"],
-    // PROP: ["view_dashboard", "view_products", "edit_products", "delete_products", "view_users", "edit_users", "delete_users", "view_roles", "edit_roles", "delete_roles", "view_permissions", "edit_permissions", "delete_permissions", "view_orders", "edit_orders", "delete_orders", "view_customers", "edit_customers", "delete_customers", "view_sales", "edit_sales", "delete_sales", "view_purchases", "edit_purchases", "delete_purchases", "view_reports", "edit_reports", "delete_reports", "view_settings", "edit_settings", "delete_settings"],
-};
+  export const roleDisplayNames: { [key: string]: string } = {
+    [ROLES.ADMIN]: "Administrador",
+    [ROLES.CAJERO]: "Cajero",
+    [ROLES.USER]: "Usuario",
+    [ROLES.PROPIETARIO]: "Propietario",
+    [ROLES.ALMACENISTA]: "Almacenista",
+  };
+  
+  export const rolePermissions: {
+    [key: string]: {
+      label: string;
+      description: string;
+      badge: string;
+      canManage: string[];
+    };
+  } = {
+    [ROLES.ADMIN]: {
+      label: "Administrador",
+      description: "Acceso completo al sistema, puede gestionar todos los usuarios excepto Propietarios.",
+      badge: "bg-primary",
+      canManage: [ROLES.ADMIN, ROLES.CAJERO, ROLES.USER, ROLES.ALMACENISTA],
+    },
+    [ROLES.CAJERO]: {
+      label: "Cajero",
+      description: "Gestiona transacciones y ventas, con acceso limitado al sistema.",
+      badge: "bg-info",
+      canManage: [],
+    },
+    [ROLES.USER]: {
+      label: "Usuario",
+      description: "Usuario estándar con acceso básico al sistema.",
+      badge: "bg-secondary",
+      canManage: [],
+    },
+    [ROLES.PROPIETARIO]: {
+      label: "Propietario",
+      description: "Control total del sistema, puede gestionar todos los usuarios y configuraciones.",
+      badge: "bg-danger",
+      canManage: [ROLES.ADMIN, ROLES.CAJERO, ROLES.USER, ROLES.ALMACENISTA, ROLES.PROPIETARIO],
+    },
+    [ROLES.ALMACENISTA]: {
+      label: "Almacenista",
+      description: "Gestiona inventarios y almacenes, con acceso limitado.",
+      badge: "bg-warning",
+      canManage: [],
+    },
+  };

@@ -1,44 +1,93 @@
 import axiosInstance from "./auth-service"
-import type { User } from "../types/User"
+import type { User,  } from "../types/User"
+import { ROLES } from "../types/roles"
 
-// // Define user types
-// export type User = {
-//   id: string
-//   email: string
-//   fullname: string
-//   password: string // Note: In a real app, passwords should never be stored in plain text
-//   role: string
-//   enabled: boolean
-//   createdAt: string
-//   updatedAt: string
-//   token?: string
-// }
+const roleMapping: Record<string, string> = {
+  "ADMIN": ROLES.ADMIN,
+  "CAJERO": ROLES.CAJERO,
+  "USUARIO": ROLES.USER,
+  "PROPIETARIO": ROLES.PROPIETARIO,
+  "ALMACENISTA": ROLES.ALMACENISTA
+}
 
-// MockAPI URL - replace with your actual MockAPI endpoint
+// API URL - actual API endpoint
 const API_URL = "http://localhost:8184/v1/users"
 
 // Get all users
+// export async function fetchUsers(): Promise<User[]> {
+//   try {
+//     console.log("fetchUsers: Sending GET request to", API_URL)
+//     const response = await axiosInstance.get(API_URL)
+//     console.log("fetchUsers: Response from", API_URL, response.data)
+
+//     const users = response.data?.data?.records || []
+
+
+//     if(!Array.isArray(users)){
+//       console.error("fetchUsers: Invalid response format. Expected array, got:", users)
+     
+//     }
+
+//     const mappedUsers = users.map((user: User) => ({
+//       ...user,
+//       role: user.role ? roleMapping[user.role.toUpperCase()] : ""
+//     }))
+    
+//     return mappedUsers; 
+
+
+//   } catch (error) {
+//     console.error("Error fetching users:", error)
+//     return []
+//   }
+// }
+
+
 export async function fetchUsers(): Promise<User[]> {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    console.error("fetchUsers: No token found, cannot fetch users");
+    throw new Error("No autorizado: por favor inicia sesión");
+  }
+
   try {
-    console.log("fetchUsers: Sending GET request to", API_URL)
-    const response = await axiosInstance.get(API_URL)
-    console.log("fetchUsers: Response from", API_URL, response.data)
+    console.log("fetchUsers: Sending /v1/users request with token");
+    const response = await axiosInstance.get(`${API_URL}/v1/users`);
+    console.log("fetchUsers: Response", response.data);
 
-    const users = response.data?.data?.records || []
+    const users = response.data?.data?.records || [];
 
-
-    if(!Array.isArray(users)){
-      console.error("fetchUsers: Invalid response format. Expected array, got:", users)
-      return []
+    if (!Array.isArray(users)) {
+      throw new Error("Formato de respuesta inválido: se esperaba un arreglo de usuarios");
     }
 
-    return users
-  } catch (error) {
-    console.error("Error fetching users:", error)
-    return []
+    const mappedUsers: User[] = users.map((user: any) => ({
+      id: user.id,
+      email: user.email,
+      fullname: user.fullname,
+      role: roleMapping[user.role?.toUpperCase()] || user.role,
+      enabled: user.enabled,
+      createdAt: user.createdAt,
+      password: "",
+    }));
+
+    console.log("fetchUsers: Mapped users", mappedUsers);
+    return mappedUsers;
+  } catch (error: any) {
+    console.error("fetchUsers: Error fetching users", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    if (error.response?.status === 401) {
+      throw new Error("No autorizado: por favor inicia sesión nuevamente");
+    }
+    if (error.response?.status === 403) {
+      throw new Error("Acceso denegado: se requiere rol de administrador");
+    }
+    throw new Error(error.message || "Error al obtener usuarios");
   }
 }
-
 // Get user by ID
 export async function fetchUserById(id: string): Promise<User | null> {
   try {

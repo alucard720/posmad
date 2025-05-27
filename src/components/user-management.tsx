@@ -1,20 +1,41 @@
+"use client"
+
 import type React from "react"
-import { Link, useNavigate } from "react-router-dom"
+
 import { useState, useEffect } from "react"
-import { useAuth } from "../contexts/auth-context"
+import { useAuth, type UserRole } from "../contexts/auth-context"
 import { fetchUsers, createUser, updateUser, deleteUser } from "../services/user-service"
+import { Tab, Nav } from "react-bootstrap"
 import type { User } from "../types/User"
-import { ROLES } from "../types/roles"
+import { ROLES, rolePermissions } from "../types/roles"
 
+// Define permission levels for each role
+// const rolePermissions = {
+//   owner: {
+//     label: "Propietario",
+//     description: "Acceso completo al sistema, incluyendo configuraciones financieras y reportes avanzados.",
+//     canManage: ["administrator", "cashier", "owner"],
+//     badge: "bg-danger",
+//   },
+//   administrator: {
+//     label: "Administrador",
+//     description: "Acceso a la mayoría de funciones administrativas, excepto configuraciones financieras sensibles.",
+//     canManage: ["cashier"],
+//     badge: "bg-primary",
+//   },
+//   cashier: {
+//     label: "Cajero",
+//     description: "Acceso limitado a ventas, pedidos y clientes.",
+//     canManage: [],
+//     badge: "bg-secondary",
+//   },
+// }
 
-interface UserManagementProps {
-  compact?: boolean
-}
-
-export function UserManagement({ compact = false }: UserManagementProps) {
-  const {user, isAuthenticated, hasPermission, isLoading: authLoading, register} = useAuth()
+export function UserConfiguration() {
   const [users, setUsers] = useState<User[]>([])
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([])
   const [searchTerm, setSearchTerm] = useState("")
+  const [activeTab, setActiveTab] = useState<UserRole | "all">("all")
   const [showModal, setShowModal] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -22,18 +43,19 @@ export function UserManagement({ compact = false }: UserManagementProps) {
     id?: string
     name: string
     email: string
-    role: string
+    role: UserRole
     password: string
-    enabled: boolean
+    status: string
   }>({
     name: "",
     email: "",
     role: "cashier",
     password: "",
-    enabled: true,
+    status: "Activo",
   })
 
-  const navigate = useNavigate()
+  const { user: currentAuthUser, register } = useAuth()
+
   // Fetch users on component mount
   useEffect(() => {
     const loadUsers = async () => {
@@ -41,6 +63,7 @@ export function UserManagement({ compact = false }: UserManagementProps) {
       try {
         const data = await fetchUsers()
         setUsers(data)
+        setFilteredUsers(data)
         setError(null)
       } catch (err) {
         setError("Error al cargar usuarios. Por favor, intenta de nuevo.")
@@ -53,15 +76,26 @@ export function UserManagement({ compact = false }: UserManagementProps) {
     loadUsers()
   }, [])
 
-  const filteredUsers = users.filter(
-    (user) =>
-      user.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      Object.values(ROLES).includes(user.role as typeof ROLES[keyof typeof ROLES]),
-  )
+  // Filter users when search term or active tab changes
+  useEffect(() => {
+    let result = users
 
-  // For compact mode, limit to 5 users
-  const displayedUsers = compact ? filteredUsers.slice(0, 5) : filteredUsers
+    // Filter by search term
+    if (searchTerm) {
+      result = result.filter(
+        (user) =>
+          user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.email.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+    }
+
+    // Filter by role tab
+    if (activeTab !== "all") {
+      result = result.filter((user) => user.role === activeTab)
+    }
+
+    setFilteredUsers(result)
+  }, [users, searchTerm, activeTab])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -74,7 +108,7 @@ export function UserManagement({ compact = false }: UserManagementProps) {
       email: "",
       role: "cashier",
       password: "",
-      enabled: true,
+      status: "Activo",
     })
     setShowModal(true)
   }
@@ -82,11 +116,11 @@ export function UserManagement({ compact = false }: UserManagementProps) {
   const handleEditUser = (user: User) => {
     setCurrentUser({
       id: user.id,
-      name: user.fullname,
+      name: user.name,
       email: user.email,
-      role: user.role as typeof ROLES[keyof typeof ROLES],
+      role: user.role,
       password: "", // We don't show the password when editing
-      enabled: user.enabled,
+      status: user.status,
     })
     setShowModal(true)
   }
@@ -114,10 +148,10 @@ export function UserManagement({ compact = false }: UserManagementProps) {
       if (currentUser.id) {
         // Update existing user
         const updatedUser = await updateUser(currentUser.id, {
-          fullname: currentUser.name,
+          name: currentUser.name,
           email: currentUser.email,
           role: currentUser.role,
-          enabled: true,
+          status: currentUser.status,
           ...(currentUser.password ? { password: currentUser.password } : {}),
         })
 
@@ -129,12 +163,12 @@ export function UserManagement({ compact = false }: UserManagementProps) {
       } else {
         // Add new user
         const newUser = await createUser({
-          fullname: currentUser.name,
+          name: currentUser.name,
           email: currentUser.email,
           password: currentUser.password,
           role: currentUser.role,
-          enabled: true,
-          createdAt: new Date().toISOString(),
+          status: currentUser.status,
+          lastLogin: new Date().toISOString(),
         })
 
         if (newUser) {
@@ -145,7 +179,7 @@ export function UserManagement({ compact = false }: UserManagementProps) {
             currentUser.email,
             currentUser.password,
             currentUser.role,
-            currentUser.enabled,
+            currentUser.status,
           )
         } else {
           throw new Error("Failed to create user")
@@ -159,9 +193,23 @@ export function UserManagement({ compact = false }: UserManagementProps) {
     }
   }
 
+  // Check if current user can manage a specific role
+  const canManageRole = (role: UserRole): boolean => {
+    if (!currentAuthUser) return false
+    return rolePermissions[currentAuthUser.role]?.canManage.includes(role) || currentAuthUser.role === "owner"
+  }
+
+  // Count users by role
+  const userCounts = {
+    all: users.length,
+    owner: users.filter((user) => user.role === "owner").length,
+    administrator: users.filter((user) => user.role === "administrator").length,
+    cashier: users.filter((user) => user.role === "cashier").length,
+  }
+
   if (isLoading) {
     return (
-      <div className="text-center p-4">
+      <div className="text-center p-5">
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Cargando...</span>
         </div>
@@ -179,102 +227,186 @@ export function UserManagement({ compact = false }: UserManagementProps) {
   }
 
   return (
-    <div>
-      {!compact && (
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="fs-4 fw-semibold">Gestión de Usuarios</h2>
-          <button className="btn btn-success d-flex align-items-center gap-2" onClick={handleAddUser}>
-            <i className="fas fa-plus"></i>
-            <span>Añadir Usuario</span>
-          </button>
-        </div>
-      )}
+    <div className="container-fluid px-0">
+      <div className="row mb-4">
+        <div className="col">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h2 className="fs-4 fw-semibold mb-0">Configuración de Usuarios</h2>
+            <button className="btn btn-success d-flex align-items-center gap-2" onClick={handleAddUser}>
+              <i className="fas fa-plus"></i>
+              <span>Añadir Usuario</span>
+            </button>
+          </div>
 
-      {!compact && (
-        <div className="mb-4 position-relative">
+          <p className="text-secondary mb-4">
+            Gestiona los usuarios del sistema y sus niveles de acceso. Cada rol tiene diferentes permisos y capacidades.
+          </p>
+        </div>
+      </div>
+
+      <div className="row mb-4">
+        <div className="col-md-8">
           <div className="input-group">
             <span className="input-group-text bg-white">
               <i className="fas fa-search"></i>
             </span>
             <input
               type="text"
-              placeholder="Buscar usuarios..."
+              placeholder="Buscar usuarios por nombre o email..."
               className="form-control"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
-      )}
+      </div>
 
-      <div className={compact ? "" : "card shadow-sm"}>
-        <div className="table-responsive">
-          <table className="table table-hover mb-0">
-            <thead className="table-light">
-              <tr>
-                <th scope="col">Nombre</th>
-                <th scope="col">Email</th>
-                <th scope="col">Rol</th>
-                {!compact && <th scope="col">Último Acceso</th>}
-                <th scope="col">Estado</th>
-                <th scope="col" className="text-end">
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {displayedUsers.length > 0 ? (
-                displayedUsers.map((user) => (
-                  <tr key={user.id}>
-                    <td className="fw-medium">{user.fullname}</td>
-                    <td>{user.email}</td>
-                    <td>
-                      <span className={`badge ${user.role === "administrator" ? "bg-primary" : "bg-secondary"}`}>
-                        {user.role === "administrator" ? "Administrador" : "Cajero"}
-                      </span>
-                    </td>
-                    {!compact && <td className="text-secondary">{user.createdAt || "-"}</td>}
-                    <td>
-                      <span className={`badge ${user.enabled ? "bg-success" : "bg-danger"}`}>
-                        {user.enabled ? "Activo" : "Inactivo"}
-                      </span>
-                    </td>
-                    <td className="text-end">
-                      <button className="btn btn-sm btn-outline-primary me-2" onClick={() => handleEditUser(user)}>
-                        <i className="fas fa-edit"></i>
-                      </button>
-                      <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeleteUser(user.id)}>
-                        <i className="fas fa-trash-alt"></i>
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={compact ? 5 : 6} className="text-center py-4">
-                    No se encontraron usuarios
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      <div className="row">
+        <div className="col-12">
+          <Tab.Container activeKey={activeTab} onSelect={(k) => setActiveTab(k as UserRole | "all")}>
+            <Nav variant="tabs" className="mb-3">
+              <Nav.Item>
+                <Nav.Link eventKey="all" className="d-flex align-items-center">
+                  <span>Todos</span>
+                  <span className="badge bg-secondary rounded-pill ms-2">{userCounts.all}</span>
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="owner" className="d-flex align-items-center">
+                  <span>Propietarios</span>
+                  <span className="badge bg-danger rounded-pill ms-2">{userCounts.owner}</span>
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="administrator" className="d-flex align-items-center">
+                  <span>Administradores</span>
+                  <span className="badge bg-primary rounded-pill ms-2">{userCounts.administrator}</span>
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="cashier" className="d-flex align-items-center">
+                  <span>Cajeros</span>
+                  <span className="badge bg-secondary rounded-pill ms-2">{userCounts.cashier}</span>
+                </Nav.Link>
+              </Nav.Item>
+            </Nav>
+
+            <Tab.Content>
+              <Tab.Pane eventKey={activeTab}>
+                <div className="card shadow-sm">
+                  <div className="table-responsive">
+                    <table className="table table-hover mb-0">
+                      <thead className="table-light">
+                        <tr>
+                          <th scope="col">Nombre</th>
+                          <th scope="col">Email</th>
+                          <th scope="col">Rol</th>
+                          <th scope="col">Último Acceso</th>
+                          <th scope="col">Estado</th>
+                          <th scope="col" className="text-end">
+                            Acciones
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredUsers.length > 0 ? (
+                          filteredUsers.map((user) => (
+                            <tr key={user.id}>
+                              <td className="fw-medium">{user.name}</td>
+                              <td>{user.email}</td>
+                              <td>
+                                <span
+                                  className={`badge ${
+                                    user.role === "owner"
+                                      ? "bg-danger"
+                                      : user.role === "administrator"
+                                        ? "bg-primary"
+                                        : "bg-secondary"
+                                  }`}
+                                >
+                                  {rolePermissions[user.role]?.label || user.role}
+                                </span>
+                              </td>
+                              <td className="text-secondary">{user.lastLogin || "-"}</td>
+                              <td>
+                                <span className={`badge ${user.status === "Activo" ? "bg-success" : "bg-danger"}`}>
+                                  {user.status}
+                                </span>
+                              </td>
+                              <td className="text-end">
+                                {canManageRole(user.role) && (
+                                  <>
+                                    <button
+                                      className="btn btn-sm btn-outline-primary me-2"
+                                      onClick={() => handleEditUser(user)}
+                                    >
+                                      <i className="fas fa-edit"></i>
+                                    </button>
+                                    <button
+                                      className="btn btn-sm btn-outline-danger"
+                                      onClick={() => handleDeleteUser(user.id)}
+                                    >
+                                      <i className="fas fa-trash-alt"></i>
+                                    </button>
+                                  </>
+                                )}
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={6} className="text-center py-4">
+                              {searchTerm
+                                ? "No se encontraron usuarios que coincidan con la búsqueda"
+                                : "No hay usuarios en esta categoría"}
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </Tab.Pane>
+            </Tab.Content>
+          </Tab.Container>
         </div>
+      </div>
 
-        {compact && filteredUsers.length > 5 && (
-          <div className="p-3 text-center border-top">
-            <Link to="/usuarios" className="btn btn-sm btn-outline-primary">
-              Ver todos los usuarios <i className="fas fa-arrow-right ms-1"></i>
-            </Link>
+      <div className="row mt-5">
+        <div className="col-12">
+          <h3 className="fs-5 fw-semibold mb-3">Roles y Permisos</h3>
+          <div className="row">
+            {Object.entries(rolePermissions).map(([role, info]) => (
+              <div className="col-md-4 mb-3" key={role}>
+                <div className="card h-100">
+                  <div className="card-header d-flex justify-content-between align-items-center">
+                    <h5 className="mb-0">{info.label}</h5>
+                    <span className={`badge ${info.badge}`}>{role}</span>
+                  </div>
+                  <div className="card-body">
+                    <p className="card-text">{info.description}</p>
+                    <h6 className="mt-3 mb-2">Puede gestionar:</h6>
+                    <ul className="list-unstyled">
+                      {info.canManage.length > 0 ? (
+                        info.canManage.map((managedRole) => (
+                          <li key={managedRole} className="mb-1">
+                            <i className="fas fa-check-circle text-success me-2"></i>
+                            {rolePermissions[managedRole as UserRole]?.label || managedRole}
+                          </li>
+                        ))
+                      ) : (
+                        <li className="text-muted">
+                          <i className="fas fa-times-circle me-2"></i>
+                          No puede gestionar usuarios
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        )}
-
-        {compact && (
-          <div className="p-3 text-end border-top">
-            <button className="btn btn-success btn-sm" onClick={handleAddUser}>
-              <i className="fas fa-plus me-1"></i> Añadir Usuario
-            </button>
-          </div>
-        )}
+        </div>
       </div>
 
       {/* User Modal */}
@@ -333,9 +465,16 @@ export function UserManagement({ compact = false }: UserManagementProps) {
                       onChange={handleInputChange}
                       required
                     >
+                      {/* Only show roles the current user can manage */}
+                      {currentAuthUser?.role === "owner" && <option value="owner">Propietario</option>}
+                      {(currentAuthUser?.role === "owner" || currentAuthUser?.role === "administrator") && (
+                        <option value="administrator">Administrador</option>
+                      )}
                       <option value="cashier">Cajero</option>
-                      <option value="administrator">Administrador</option>
                     </select>
+                    <div className="form-text">
+                      {rolePermissions[currentUser.role]?.description || "Selecciona un rol para ver su descripción"}
+                    </div>
                   </div>
                   <div className="mb-3">
                     <label htmlFor="password" className="form-label">
@@ -357,14 +496,14 @@ export function UserManagement({ compact = false }: UserManagementProps) {
                     </label>
                     <select
                       className="form-select"
-                      id="enabled"
-                      name="enabled"
-                      value={currentUser.enabled ? "true" : "false"}
+                      id="status"
+                      name="status"
+                      value={currentUser.status}
                       onChange={handleInputChange}
                       required
                     >
-                      <option value="true">Activo</option>
-                      <option value="false">Inactivo</option>
+                      <option value="Activo">Activo</option>
+                      <option value="Inactivo">Inactivo</option>
                     </select>
                   </div>
                 </div>
