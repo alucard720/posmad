@@ -10,6 +10,30 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 
+const rolePermissions = {
+  [ROLES.ADMIN]: {
+    label: "Propietario",
+    description: "Acceso completo al sistema, incluyendo configuraciones financieras y reportes avanzados.",
+    canManage: [ROLES.ADMIN, ROLES.CAJERO, ROLES.PROPIETARIO],
+    badge: "bg-danger",
+    badgeClass: "bg-danger",
+  },
+  [ROLES.PROPIETARIO]: {
+    label: "Administrador",
+    description: "Acceso a la mayoría de funciones administrativas, excepto configuraciones financieras sensibles.",
+    canManage: [ROLES.CAJERO],
+    badge: "bg-primary",
+    badgeClass: "bg-primary",
+  },
+  [ROLES.CAJERO]: {
+    label: "Cajero",
+    description: "Acceso limitado a ventas, pedidos y clientes.",
+    canManage: [],
+    badge: "bg-secondary",
+    badgeClass: "bg-secondary",
+  },
+}
+
 
 
 
@@ -427,6 +451,40 @@ const handleSubmit = async (e: React.FormEvent) =>{
             </button>
           </div>
         )}
+      </div>
+
+
+      <h3 className="fs-5 fw-semibold mb-3">Roles y Permisos</h3>
+      <div className="row">
+        {Object.entries(rolePermissions).map(([role, info]) => (
+          <div className="col-md-4 mb-3" key={role}>
+            <div className="card h-100">
+              <div className="card-header d-flex justify-content-between align-items-center">
+                <h5 className="mb-0">{info.label}</h5>
+                <span className={`badge ${info.badge}`}>{role}</span>
+              </div>
+              <div className="card-body">
+                <p className="card-text">{info.description}</p>
+                <h6 className="mt-3 mb-2">Puede gestionar:</h6>
+                <ul className="list-unstyled">
+                  {info.canManage.length > 0 ? (
+                    info.canManage.map((managedRole) => (
+                      <li key={managedRole} className="mb-1">
+                        <i className="fas fa-check-circle text-success me-2"></i>
+                        {rolePermissions[managedRole]?.label || managedRole}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-muted">
+                      <i className="fas fa-times-circle me-2"></i>
+                      No puede gestionar usuarios
+                    </li>
+                  )}
+                </ul>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* User Modal */}
