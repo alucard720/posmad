@@ -15,7 +15,7 @@ export const handleError = (error: any) => {
       console.log(err.data);
     } else if (err?.status == 401) {
       console.log("Please login");
-      window.history.pushState({}, "LoginPage", "/login");
+      window.history.pushState({}, "LoginPage", "/");
     } else if (err) {
       console.log(err?.data);
     }

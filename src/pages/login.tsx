@@ -21,7 +21,8 @@ const signupSchema = Yup.object().shape({
 });
 
   
-const LoginPage: React.FC = () => {  
+const LoginPage: React.FC = () => { 
+  const [showPassword, setShowPassword] = useState(false) 
   const [error, setError] = useState<string | null>(null);
   const { loginUser } = useAuth();
   const {
@@ -90,8 +91,9 @@ const LoginPage: React.FC = () => {
                 <button
                   type="button"
                   className="btn btn-outline-secondary"
+                  onClick={() => setShowPassword(!showPassword)}
                 >
-                  <i className={`fas fa-eye-slash`}></i>
+                  <i className={`fas ${showPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
                 </button>
               </div>
             </div>
