@@ -2,18 +2,18 @@
 
 import { useAuth } from "../contexts/auth-context"
 import { useState } from "react"
-import { ROLES } from "../types/roles"
+import { rolePermissions, ROLES , roleDisplayNames} from "../types/roles"
 
 type HeaderProps = {
   title: string
 }
-const roleDisplayNames = {
-  [ROLES.ADMIN]: "Administrador",
-  [ROLES.USER]: "Usuario",
-  [ROLES.PROPIETARIO]: "Propietario",
-  [ROLES.CAJERO]: "Cajero",
-  [ROLES.ALMACENISTA]: "Almacenista",
-}
+// const roleDisplayNames = {
+//   [ROLES.ADMIN]: "Administrador",
+//   [ROLES.USER]: "Usuario",
+//   [ROLES.PROPIETARIO]: "Propietario",
+//   [ROLES.CAJERO]: "Cajero",
+//   [ROLES.ALMACENISTA]: "Almacenista",
+// }
 
 const badgeClasses = {
   [ROLES.ADMIN]: "bg-danger",
@@ -39,9 +39,11 @@ export function Header({ title }: HeaderProps) {
       .toUpperCase()
       .substring(0, 2)
   }
-  const displayRole = user?.role && Object.values(ROLES).includes(user.role) ? roleDisplayNames[user.role] : "Administrador"
-  const displaybadgeClass = user?.role && Object.values(ROLES).includes(user.role) ? badgeClasses[user.role] : "bg-secondary"
-  if(user?.role && !Object.values(ROLES).includes(user.role)){
+
+  const isValidRole =(role : unknown): role is keyof typeof roleDisplayNames => typeof role === "string" && role in roleDisplayNames;
+  const displayRole = isValidRole(user?.role) ? roleDisplayNames[user.role] : "Administrador"
+  const displaybadgeClass = isValidRole(user?.role) ? rolePermissions[user.role as keyof typeof rolePermissions].badge : "bg-primary";
+  if(user?.role && !isValidRole(user.role)){
     console.warn(`Invalid role: ${user.role}`)
   }
   

@@ -6,6 +6,17 @@ export const ROLES ={
     PROPIETARIO: "7c9e6679-7425-40de-944b-e07fc1f907cb",
 } as const;
 
+export const roleUuidToCode ={
+  "f47ac10b-58cc-4372-a567-0e02b2c3d479": "ADMIN",
+  "7c9e6679-7425-40de-944b-e07fc1f90ae7": "USER",
+  "7c9e6679-7425-40de-944b-e07fc1f907c9": "CAJERO",
+  "7c9e6679-7425-40de-944b-e07fc1f907ca": "ALMACENISTA",
+  "7c9e6679-7425-40de-944b-e07fc1f907cb": "PROPIETARIO",
+}
+
+
+
+
 export const PERMISSIONS = {
    VIEW_DASHBOARD: "view_dashboard",
    VIEW_PRODUCTS: "view_products",
@@ -41,13 +52,7 @@ export const PERMISSIONS = {
 };
 
 
-  export const roleDisplayNames: { [key: string]: string } = {
-    [ROLES.ADMIN]: "Administrador",
-    [ROLES.CAJERO]: "Cajero",
-    [ROLES.USER]: "Usuario",
-    [ROLES.PROPIETARIO]: "Propietario",
-    [ROLES.ALMACENISTA]: "Almacenista",
-  };
+
   
   export const rolePermissions: {
     [key: string]: {
@@ -87,4 +92,12 @@ export const PERMISSIONS = {
       badge: "bg-warning",
       canManage: [],
     },
+  };
+
+  export const roleDisplayNames: { [key: string]: string } = {
+    [ROLES.ADMIN]: rolePermissions[ROLES.ADMIN].label, // "Administrador"
+    [ROLES.CAJERO]: rolePermissions[ROLES.CAJERO].label, // "Cajero"  
+    [ROLES.USER]: rolePermissions[ROLES.USER].label, // "Usuario"
+    [ROLES.PROPIETARIO]: rolePermissions[ROLES.PROPIETARIO].label, // "Propietario"
+    [ROLES.ALMACENISTA]: rolePermissions[ROLES.ALMACENISTA].label, // "Almacenista"
   };

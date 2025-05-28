@@ -7,7 +7,7 @@ import { ROLES } from "../types/roles"
 // Define menu items with role-based access
 const menuItems = [
   {
-    href: "/",
+    href: "/dashboard",
     icon: "fa-check-circle",
     label: "Vender",
     roles: [ROLES.ADMIN, ROLES.CAJERO, ROLES.ALMACENISTA, ROLES.PROPIETARIO, ROLES.USER],
@@ -166,9 +166,12 @@ export default function Sidebar() {
           {/* Role indicator */}
           <div className={`text-center mb-2 px-2 ${expanded ? "d-block" : "d-none"}`}>
             <span
-              className={`badge ${user?.role === ROLES.ADMIN ? "bg-danger"
-              : [ROLES.CAJERO, ROLES.ALMACENISTA, ROLES.PROPIETARIO].includes(user?.role ?? "") ? "bg-primary"
-                : "bg-secondary"
+              className={`badge ${
+                user?.role === ROLES.ADMIN
+                  ? "bg-danger"
+                  : ([ROLES.CAJERO, ROLES.ALMACENISTA, ROLES.PROPIETARIO] as readonly string[]).includes(user?.role ?? "")
+                    ? "bg-primary"
+                    : "bg-secondary"
               } text-white`}
             >
               {/* {user?.role && roleDisplayNames[user.role] ? roleDisplayNames[user.role] : "Rol desconocido"} */}
