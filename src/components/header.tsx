@@ -2,27 +2,29 @@
 
 import { useAuth } from "../contexts/auth-context"
 import { useState } from "react"
-import { rolePermissions, ROLES , roleDisplayNames} from "../types/roles"
+import { ROLES} from "../types/roles"
 
 type HeaderProps = {
   title: string
 }
-// const roleDisplayNames = {
-//   [ROLES.ADMIN]: "Administrador",
-//   [ROLES.USER]: "Usuario",
-//   [ROLES.PROPIETARIO]: "Propietario",
-//   [ROLES.CAJERO]: "Cajero",
-//   [ROLES.ALMACENISTA]: "Almacenista",
-// }
+const roleDisplayNames = {
+  [ROLES.ADMIN]: "Administrador",
+  [ROLES.USER]: "Usuario",
+  [ROLES.PROPIETARIO]: "Propietario",
+  [ROLES.CAJERO]: "Cajero",
+  [ROLES.ALMACENISTA]: "Almacenista",
+}
 
 const badgeClasses = {
-  [ROLES.ADMIN]: "bg-danger",
+  [ROLES.ADMIN]: "bg-success",
   [ROLES.USER]: "bg-secondary",
-  [ROLES.CAJERO]: "bg-primary",
-  [ROLES.ALMACENISTA]: "bg-primary",
+  [ROLES.CAJERO]: "bg-info",
+  [ROLES.ALMACENISTA]: "bg-danger",
   [ROLES.PROPIETARIO]: "bg-primary",
 }
 
+const isValidRole = (role: unknown): role is keyof typeof roleDisplayNames =>
+  typeof role === "string" && role in roleDisplayNames;
 
 export function Header({ title }: HeaderProps) {
   const { logout, user } = useAuth()
@@ -39,10 +41,8 @@ export function Header({ title }: HeaderProps) {
       .toUpperCase()
       .substring(0, 2)
   }
-
-  const isValidRole =(role : unknown): role is keyof typeof roleDisplayNames => typeof role === "string" && role in roleDisplayNames;
   const displayRole = isValidRole(user?.role) ? roleDisplayNames[user.role] : "Administrador"
-  const displaybadgeClass = isValidRole(user?.role) ? rolePermissions[user.role as keyof typeof rolePermissions].badge : "bg-primary";
+  const displaybadgeClass = isValidRole(user?.role) ? badgeClasses[user.role] : "bg-secondary"
   if(user?.role && !isValidRole(user.role)){
     console.warn(`Invalid role: ${user.role}`)
   }

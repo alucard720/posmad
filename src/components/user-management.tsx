@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/auth-context";
 import { createUser, deleteUser, fetchUsers, updateUser } from "../services/user-service";
 import type { User } from "../types/User";
-import { ROLES,roleUuidToCode } from "../types/roles";
+import { roleDisplayNames, ROLES,roleUuidToCode } from "../types/roles";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -21,7 +21,7 @@ const rolePermissions = {
   [roleUuidToCode[ROLES.ADMIN]]: {
     label: "Administrador",
     description: "Acceso a la mayoría de funciones administrativas, excepto configuraciones financieras sensibles.",
-    canManage: [ROLES.ADMIN, ROLES.CAJERO, ROLES.PROPIETARIO],
+    canManage: [roleUuidToCode[ROLES.ADMIN], roleUuidToCode[ROLES.CAJERO], roleUuidToCode[ROLES.PROPIETARIO]],
     badge: "bg-primary",
     badgeClass: "bg-primary",
   },
@@ -46,6 +46,7 @@ export default function UserManagement({ compact = false }: UserManagementProps)
   const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("all");
   const [error, setError] = useState<string | null>(null);
   const [isloading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -73,16 +74,16 @@ export default function UserManagement({ compact = false }: UserManagementProps)
       }
 
       if (!hasPermission(ROLES.ADMIN)) {
-        console.log("UserManagement: Usuario sin rol ADMIN", { role: user?.role });
+        // console.log("UserManagement: Usuario sin rol ADMIN", { role: user?.role });
         setError("Acceso denegado: se requiere rol de administrador");
         setIsLoading(false);
         return;
       }
 
       try {
-        console.log("UserManagement: Obteniendo usuarios");
+        // console.log("UserManagement: Obteniendo usuarios");
         const fetchedUsers = await fetchUsers();
-        console.log("UserManagement: Usuarios obtenidos", fetchedUsers);
+        // console.log("UserManagement: Usuarios obtenidos", fetchedUsers);
         if (fetchedUsers.length > 0) {
           console.log("UserManagement: First user structure", {
             id: fetchedUsers[0].id,
@@ -93,16 +94,16 @@ export default function UserManagement({ compact = false }: UserManagementProps)
             createdAt: fetchedUsers[0].createdAt,
           });
         }
-        console.log("UserManagement: Roles received", fetchedUsers.map(u => ({
-          id: u.id,
-          role: u.role,
-          type: typeof u.role,
-          hasRole: u.hasOwnProperty("role"),
-        })));
+        // console.log("UserManagement: Roles received", fetchedUsers.map(u => ({
+        //   id: u.id,
+        //   role: u.role,
+        //   type: typeof u.role,
+        //   hasRole: u.hasOwnProperty("role"),
+        // })));
         setUsers(fetchedUsers);
         setError(null);
       } catch (err: any) {
-        console.error("UserManagement: Error", err);
+        // console.error("UserManagement: Error", err);
         setError(err.message || "No se pudieron cargar los usuarios. Intenta de nuevo.");
       } finally {
         setIsLoading(false);
@@ -110,8 +111,15 @@ export default function UserManagement({ compact = false }: UserManagementProps)
     }
 
     loadUsers();
-  }, [isAuthenticated, hasPermission, user?.role, navigate]);
+  }, []);
   
+  useEffect(() => {
+    if (activeTab !== "all"){
+      setUsers(users.filter((user)=> user.role === activeTab));
+    }
+  }, [activeTab]);
+
+
  const filteredUsers = users.filter((user) => 
   user.fullname.toLowerCase().includes(searchTerm.toLowerCase()) || 
   user.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -121,6 +129,7 @@ export default function UserManagement({ compact = false }: UserManagementProps)
 
  const displayedUsers = compact ? filteredUsers.slice(0, 5) : filteredUsers;
 
+ 
 
  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
   const { name, value } = e.target;
@@ -235,6 +244,16 @@ const handleSubmit = async (e: React.FormEvent) =>{
   setShowModal(false);
 }
 
+const userCounts ={
+  all: users.length,
+  active: users.filter(user => user.enabled).length,
+  inactive: users.filter(user => !user.enabled).length,
+  admin: users.filter(user => user.role === ROLES.ADMIN).length,
+  cashier: users.filter(user => user.role === ROLES.CAJERO).length,
+  almacenista: users.filter(user => user.role === ROLES.ALMACENISTA).length,
+  propietario: users.filter(user => user.role === ROLES.PROPIETARIO).length,
+}
+
   if (!isAuthenticated) {
     return null; // Redirect handled in useEffect
   }
@@ -329,9 +348,9 @@ const handleSubmit = async (e: React.FormEvent) =>{
 
 
   ///////////////test2////
-  if (isloading) {
+  if (isloading && users.length === 0) {
     return (
-      <div className="text-center p-4">
+      <div className="text-center p-5">
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Cargando...</span>
         </div>
@@ -340,31 +359,53 @@ const handleSubmit = async (e: React.FormEvent) =>{
     )
   }
 
-  if (error) {
-    return (
-      <div className="alert alert-danger" role="alert">
-        {error}
-        <button className="btn btn-outline-danger btn-sm ms-3" onClick={() => window.location.reload()}>
-          Reintentar
-        </button>
-      </div>
-    )
-  }
+  // if (error) {
+  //   return (
+  //     <div className="alert alert-danger" role="alert">
+  //       {error}
+  //       <button className="btn btn-outline-danger btn-sm ms-3" onClick={() => window.location.reload()}>
+  //         Reintentar
+  //       </button>
+  //     </div>
+  //   )
+  // }
    
   return (
-    <div>
-      {!compact && (
+    <div className="container-fluid px-0">
+      {!compact && (        
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="fs-4 fw-semibold">Gestión de Usuarios</h2>
-          <button className="btn btn-success d-flex align-items-center gap-2" onClick={handleAddUser}>
-            <i className="fas fa-plus"></i>
+          <div>
+          <h2 className="fs-4 fw-semibold mb-1">Usuarios del Sistema</h2>
+          <p className="text-secondary">
+            Gestiona los usuarios del sistema y sus niveles de acceso. Cada rol tiene diferentes permisos y capacidades.
+          </p>
+        </div>
+
+          <h2 className="fs-4 fw-semibold mb-1">Gestión de Usuarios</h2>
+          <button className="btn btn-success d-flex align-items-center gap-2" onClick={handleAddUser} disabled={isloading}>
+            <i><FontAwesomeIcon icon={faPlus} /></i>
             <span>Añadir Usuario</span>
           </button>
         </div>
       )}
 
+{error && (
+        <div className="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+          <i className="fas fa-exclamation-triangle me-2"></i>
+          {error}
+          <button
+            type="button"
+            className="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Close"
+            onClick={() => setError(null)}
+          ></button>
+        </div>
+      )}
+
       {!compact && (
-        <div className="mb-4 position-relative">
+        <div className="row mb-4">
+          <div className="col">
           <div className="input-group">
             <span className="input-group-text bg-white">
               <i className="fas fa-search"></i>
@@ -378,7 +419,41 @@ const handleSubmit = async (e: React.FormEvent) =>{
             />
           </div>
         </div>
+        </div>
       )}
+
+<div className="mb-4">
+        <div className="btn-group" role="group" aria-label="Filtrar usuarios por rol">
+          <button
+            type="button"
+            className={`btn ${activeTab === "all" ? "btn-secondary" : "btn-outline-secondary"}`}
+            onClick={() => setActiveTab("all")}
+          >
+            Todos <span className="badge bg-light text-dark ms-1">{userCounts.all}</span>
+          </button>
+          <button
+            type="button"
+            className={`btn ${activeTab === roleDisplayNames.PROPIETARIO ? "btn-danger" : "btn-outline-danger"}`}
+            onClick={() => setActiveTab(roleDisplayNames.PROPIETARIO)}
+          >
+            Propietarios <span className="badge bg-light text-dark ms-1">{userCounts.propietario}</span>
+          </button>
+          <button
+            type="button"
+            className={`btn ${activeTab === roleDisplayNames.ADMIN ? "btn-primary" : "btn-outline-primary"}`}
+            onClick={() => setActiveTab(roleDisplayNames.ADMIN)}
+          >
+            Administradores <span className="badge bg-light text-dark ms-1">{userCounts.admin}</span>
+          </button>
+          <button
+            type="button"
+            className={`btn ${activeTab === roleDisplayNames.CAJERO ? "btn-secondary" : "btn-outline-secondary"}`}
+            onClick={() => setActiveTab(roleDisplayNames.CAJERO)}
+          >
+            Cajeros <span className="badge bg-light text-dark ms-1">{userCounts.cashier}</span>
+          </button>
+        </div>
+      </div>
 
       <div className={compact ? "" : "card shadow-sm"}>
         <div className="table-responsive">
@@ -543,14 +618,14 @@ const handleSubmit = async (e: React.FormEvent) =>{
                       onChange={handleInputChange}
                       required
                     >
-                      <option value="cashier">Cajero</option>
-                      <option value="administrator">Administrador</option>
-                      <option value="manager">Gerente</option>
-                      <option value="supervisor">Supervisor</option>
-                      <option value="employee">Empleado</option>
-                      <option value="customer">Cliente</option>
-                      <option value="guest">Invitado</option>
-                      <option value="other">Otro</option>
+                      <option value="Cajero">Cajero</option>
+                      <option value="Administrator">Administrador</option>
+                      <option value="Propietario">Gerente</option>
+                      <option value="Almacenista">Supervisor</option>
+                      <option value="Usuario">Empleado</option>
+                      <option value="Cliente">Cliente</option>
+                      <option value="Invitado">Invitado</option>
+                      <option value="Otro">Otro</option>
                     </select>
                   </div>
                   <div className="mb-3">

@@ -42,14 +42,12 @@ export const roleConfig = {
       "clientes",
       "transacciones",
       "finanzas",
-      "estadisticas",
-      "usuarios",
-      "configuraciones",
+      "estadisticas",    
       "catalogo",
       "almacen",
     ],
-    canManage: [UserRole.admin, UserRole.almacenista, UserRole.cajero, UserRole.user],
-    priority: 5, // Highest priority
+    canManage: [ UserRole.almacenista, UserRole.cajero, UserRole.user],
+    priority: 4, // Highest priority
   },
   [UserRole.admin]: {
     uuid: ROLES.ADMIN,
@@ -69,8 +67,8 @@ export const roleConfig = {
       "catalogo",
       "almacen",
     ],
-    canManage: [UserRole.almacenista, UserRole.cajero, UserRole.user],
-    priority: 4,
+    canManage: [UserRole.admin, UserRole.almacenista, UserRole.cajero, UserRole.user],
+    priority: 5,
   },
   [UserRole.almacenista]: {
     uuid: ROLES.ALMACENISTA,
@@ -104,8 +102,25 @@ export const roleConfig = {
   },
 } as const
 
+// Add a dedicated object for easy access to display names
+export const roleDisplayNames = {
+  [UserRole.propietario]: "Propietario",
+  [UserRole.admin]: "Administrador",
+  [UserRole.almacenista]: "Almacenista",
+  [UserRole.cajero]: "Cajero",
+  [UserRole.user]: "Usuario",
+} as const
 // Helper functions for role management
 
+
+
+export const badgeClasses = {
+  [ROLES.ADMIN]: "bg-success",
+  [ROLES.USER]: "bg-secondary",
+  [ROLES.CAJERO]: "bg-info",
+  [ROLES.ALMACENISTA]: "bg-primary",
+  [ROLES.PROPIETARIO]: "bg-danger",
+} as const
 /**
  * Convert UUID from API to internal UserRole enum
  */

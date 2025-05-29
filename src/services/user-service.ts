@@ -1,8 +1,8 @@
 // import axiosInstance from "./auth-service"
-import axios from "axios"
+// import axios from "axios"
 import type { User,  } from "../types/User"
 import { ROLES } from "../types/roles"
-import axiosInstance from "./auth-service"
+import api from "../lib/api"
 
 const roleMapping: Record<string, string> = {
   "ADMIN": ROLES.ADMIN,
@@ -13,7 +13,7 @@ const roleMapping: Record<string, string> = {
 }
 
 // API URL - actual API endpoint
-const api = "http://localhost:8184"
+// const api = "http://localhost:8184"
 
 
 const checkToken = ()=>{
@@ -21,7 +21,7 @@ const checkToken = ()=>{
   if(!token){
     throw new Error("No token found, cannot fetch users")
   }
-  console.log("checkToken: Token found", token)
+  // console.log("checkToken: Token found", token)
   return token
 }
 // Get all users
@@ -29,13 +29,13 @@ export async function fetchUsers(): Promise<User[]> {
   const accessToken = checkToken()
   try {
    
-    const response = await axios.get(`${api}/v1/users`,{
+    const response = await api.get("/v1/users",{
       headers:{
         Authorization: `Bearer ${accessToken}`
       }
     })
 
-    console.log("fetchUsers: Response from", api, response.data)
+    // console.log("fetchUsers: Response from", api, response.data)
 
     const users = response.data?.data?.records || []
 
@@ -47,10 +47,8 @@ export async function fetchUsers(): Promise<User[]> {
       ...user,
       role: user.role ? roleMapping[user.role.toUpperCase()] : ""
     }))
-    console.log("fetchUsers: Mapped users", mappedUsers)
+    // console.log("fetchUsers: Mapped users", mappedUsers)
     return mappedUsers; 
-
-
   } catch (error) {
     console.error("Error fetching users:", error)
     return []
@@ -62,7 +60,7 @@ export async function fetchUsers(): Promise<User[]> {
 // Get user by ID
 export async function fetchUserById(id: string): Promise<User | null> {
   try {
-    const response = await axiosInstance.get(`${api}/v1/users/${id}`)
+    const response = await api.get("/v1/users/${id}")
 
     return response.data?.data?.records || null
   } catch (error) {
@@ -74,7 +72,7 @@ export async function fetchUserById(id: string): Promise<User | null> {
 // Create a new user
 export async function createUser(user: Omit<User, "id">): Promise<User | null> {
   try {
-    const response = await axiosInstance.post(`${api}/v1/users`, user)
+    const response = await api.post(`${api}/v1/users`, user)
 
     return response.data?.data?.records || null
   } catch (error) {
@@ -86,7 +84,7 @@ export async function createUser(user: Omit<User, "id">): Promise<User | null> {
 // Update an existing user
 export async function updateUser(id: string, updates: Partial<User>): Promise<User | null> {
   try {
-    const response = await axiosInstance.put(`${api}/v1/users/${id}`, updates)
+    const response = await api.put("/v1/users/${id}", updates)
 
     return response.data?.data?.records || null
 
@@ -99,7 +97,7 @@ export async function updateUser(id: string, updates: Partial<User>): Promise<Us
 // Delete a user
 export async function deleteUser(id: string): Promise<boolean> {
   try {
-    const response = await axiosInstance.delete(`${api}/v1/users/${id}`)
+    const response = await api.delete("/v1/users/${id}")
 
     return response.data?.data?.records || false
   } catch (error) {
