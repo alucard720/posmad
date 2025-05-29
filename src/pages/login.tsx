@@ -81,7 +81,7 @@ const LoginPage: React.FC = () => {
               <div className="input-group">
                 <input
                   id="password"                 
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   required
                   className="form-control"

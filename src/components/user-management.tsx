@@ -4,28 +4,28 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/auth-context";
 import { createUser, deleteUser, fetchUsers, updateUser } from "../services/user-service";
 import type { User } from "../types/User";
-import { ROLES, roleDisplayNames, } from "../types/roles";
+import { ROLES,roleUuidToCode } from "../types/roles";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 
 const rolePermissions = {
-  [ROLES.ADMIN]: {
+  [roleUuidToCode[ROLES.PROPIETARIO]]: {
     label: "Propietario",
     description: "Acceso completo al sistema, incluyendo configuraciones financieras y reportes avanzados.",
-    canManage: [ROLES.ADMIN, ROLES.CAJERO, ROLES.PROPIETARIO],
+    canManage: [roleUuidToCode[ROLES.CAJERO]],
     badge: "bg-danger",
     badgeClass: "bg-danger",
   },
-  [ROLES.PROPIETARIO]: {
+  [roleUuidToCode[ROLES.ADMIN]]: {
     label: "Administrador",
     description: "Acceso a la mayoría de funciones administrativas, excepto configuraciones financieras sensibles.",
-    canManage: [ROLES.CAJERO],
+    canManage: [ROLES.ADMIN, ROLES.CAJERO, ROLES.PROPIETARIO],
     badge: "bg-primary",
     badgeClass: "bg-primary",
   },
-  [ROLES.CAJERO]: {
+  [roleUuidToCode[ROLES.CAJERO]]: {
     label: "Cajero",
     description: "Acceso limitado a ventas, pedidos y clientes.",
     canManage: [],
@@ -355,7 +355,7 @@ const handleSubmit = async (e: React.FormEvent) =>{
     <div>
       {!compact && (
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="fs-4 fw-semibold">Gestió de Usuarios</h2>
+          <h2 className="fs-4 fw-semibold">Gestión de Usuarios</h2>
           <button className="btn btn-success d-flex align-items-center gap-2" onClick={handleAddUser}>
             <i className="fas fa-plus"></i>
             <span>Añadir Usuario</span>
@@ -403,8 +403,8 @@ const handleSubmit = async (e: React.FormEvent) =>{
                     <td>{user.email}</td>
                     <td>
                     <span className={`badge ${roleBadgeColors[user.role ?? ""] ?? "bg-secondary"}`}>
-  {typeof user.role === "string" && user.role in roleDisplayNames
-    ? roleDisplayNames[user.role as keyof typeof roleDisplayNames]
+  {typeof user.role === "string" && user.role in rolePermissions
+    ? rolePermissions[user.role as keyof typeof rolePermissions].label
     : `Rol desconocido (${user.role ?? "undefined"})`}
 </span>
 
@@ -471,7 +471,7 @@ const handleSubmit = async (e: React.FormEvent) =>{
                     info.canManage.map((managedRole) => (
                       <li key={managedRole} className="mb-1">
                         <i className="fas fa-check-circle text-success me-2"></i>
-                        {rolePermissions[managedRole]?.label || managedRole}
+                        {rolePermissions[managedRole as keyof typeof rolePermissions]?.label || managedRole}
                       </li>
                     ))
                   ) : (
