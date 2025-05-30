@@ -1,10 +1,4 @@
-export enum UserRole {
-  admin = "ADMIN",
-  user = "USER",
-  cajero = "CAJERO",
-  almacenista = "ALMACENISTA",
-  propietario = "PROPIETARIO",
-}
+
 
 export type User = {
   id: string;

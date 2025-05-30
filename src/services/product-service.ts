@@ -1,7 +1,7 @@
 import type { Product } from "../contexts/product-context"
 
 // MockAPI URL - replace with your actual MockAPI endpoint
-const MOCKAPI_URL = "https://64a6f5ec096b3f0fcc80e3fa.mockapi.io/api/products"
+const MOCKAPI_URL = "http://localhost:8184"
 
 export async function fetchProducts(): Promise<Product[]> {
   try {

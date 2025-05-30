@@ -1,4 +1,4 @@
-import { UserRole } from "../types/User"
+
 
 // Role UUIDs as provided by the API
 export const ROLES = {
@@ -9,6 +9,14 @@ export const ROLES = {
   PROPIETARIO: "7c9e6679-7425-40de-944b-e07fc1f907cb",
 } as const
 
+
+export enum UserRole {
+  ADMIN = "ADMIN",
+  USER = "USER",
+  CAJERO = "CAJERO",
+  ALMACENISTA = "ALMACENISTA",
+  PROPIETARIO = "PROPIETARIO",
+}
 // Mapping from UUID to role code
 export const roleUuidToCode = {
   "f47ac10b-58cc-4372-a567-0e02b2c3d479": "ADMIN",
@@ -29,7 +37,7 @@ export const roleCodeToUuid = {
 
 // Role configuration with permissions and metadata
 export const roleConfig = {
-  [UserRole.propietario]: {
+  [UserRole.PROPIETARIO]: {
     uuid: ROLES.PROPIETARIO,
     code: "PROPIETARIO",
     label: "Propietario",
@@ -46,10 +54,10 @@ export const roleConfig = {
       "catalogo",
       "almacen",
     ],
-    canManage: [ UserRole.almacenista, UserRole.cajero, UserRole.user],
+    canManage: [ UserRole.ALMACENISTA, UserRole.CAJERO, UserRole.USER],
     priority: 4, // Highest priority
   },
-  [UserRole.admin]: {
+  [UserRole.ADMIN]: {
     uuid: ROLES.ADMIN,
     code: "ADMIN",
     label: "Administrador",
@@ -67,10 +75,10 @@ export const roleConfig = {
       "catalogo",
       "almacen",
     ],
-    canManage: [UserRole.admin, UserRole.almacenista, UserRole.cajero, UserRole.user],
+    canManage: [UserRole.ADMIN, UserRole.ALMACENISTA, UserRole.CAJERO, UserRole.USER],
     priority: 5,
   },
-  [UserRole.almacenista]: {
+  [UserRole.ALMACENISTA]: {
     uuid: ROLES.ALMACENISTA,
     code: "ALMACENISTA",
     label: "Almacenista",
@@ -80,7 +88,7 @@ export const roleConfig = {
     canManage: [],
     priority: 3,
   },
-  [UserRole.cajero]: {
+  [UserRole.CAJERO]: {
     uuid: ROLES.CAJERO,
     code: "CAJERO",
     label: "Cajero",
@@ -90,7 +98,7 @@ export const roleConfig = {
     canManage: [],
     priority: 2,
   },
-  [UserRole.user]: {
+  [UserRole.USER]: {
     uuid: ROLES.USER,
     code: "USER",
     label: "Usuario",
@@ -104,11 +112,11 @@ export const roleConfig = {
 
 // Add a dedicated object for easy access to display names
 export const roleDisplayNames = {
-  [UserRole.propietario]: "Propietario",
-  [UserRole.admin]: "Administrador",
-  [UserRole.almacenista]: "Almacenista",
-  [UserRole.cajero]: "Cajero",
-  [UserRole.user]: "Usuario",
+  [UserRole.PROPIETARIO]: "Propietario",
+  [UserRole.ADMIN]: "Administrador",
+  [UserRole.ALMACENISTA]: "Almacenista",
+  [UserRole.CAJERO]: "Cajero",
+  [UserRole.USER]: "Usuario",
 } as const
 // Helper functions for role management
 
@@ -125,24 +133,16 @@ export const badgeClasses = {
  * Convert UUID from API to internal UserRole enum
  */
 export function mapUuidToRole(uuid: string): UserRole {
-  const roleCode = roleUuidToCode[uuid as keyof typeof roleUuidToCode]
+  const roleCode = roleUuidToCode[uuid as keyof typeof roleUuidToCode];
 
-  switch (roleCode) {
-    case "PROPIETARIO":
-      return UserRole.propietario
-    case "ADMIN":
-      return UserRole.admin
-    case "ALMACENISTA":
-      return UserRole.almacenista
-    case "CAJERO":
-      return UserRole.cajero
-    case "USER":
-      return UserRole.user
-    default:
-      console.warn(`Unknown role UUID: ${uuid}, defaulting to USER`)
-      return UserRole.user
+  if (!roleCode || !(roleCode in UserRole)) {
+    console.warn(`Unknown role UUID: ${uuid}, defaulting to USER`);
+    return UserRole.USER;
   }
+
+  return UserRole[roleCode as keyof typeof UserRole];
 }
+
 
 /**
  * Convert internal UserRole enum to UUID for API calls
@@ -223,7 +223,7 @@ export function getSelectableRoles(currentRole: UserRole): UserRole[] {
   const manageableRoles = getManageableRoles(currentRole)
 
   // If user can manage roles, they can also assign their own role (except for propietario creating another propietario)
-  if (currentRole !== UserRole.propietario) {
+  if (currentRole !== UserRole.PROPIETARIO) {
     manageableRoles.push(currentRole)
   }
 
@@ -241,7 +241,16 @@ export function isHigherRole(role1: UserRole, role2: UserRole): boolean {
  * Get role configuration
  */
 export function getRoleConfig(role: UserRole) {
-  return roleConfig[role]
+  return roleConfig[role] ?? {
+    uuid: "",
+    code: "UNKNOWN",
+    label: "Rol desconocido",
+    description: "Rol no reconocido por el sistema.",
+    badgeColor: "secondary",
+    permissions: [],
+    canManage: [],
+    priority: 0,
+  };
 }
 
 /**
@@ -264,11 +273,11 @@ export function getAllRoleUuids(): string[] {
 export function getRoleStats(users: Array<{ role: UserRole }>): Record<UserRole | "all", number> {
   const stats = {
     all: users.length,
-    [UserRole.propietario]: 0,
-    [UserRole.admin]: 0,
-    [UserRole.almacenista]: 0,
-    [UserRole.cajero]: 0,
-    [UserRole.user]: 0,
+    [UserRole.PROPIETARIO]: 0,
+    [UserRole.ADMIN]: 0,
+    [UserRole.ALMACENISTA]: 0,
+    [UserRole.CAJERO]: 0,
+    [UserRole.USER]: 0,
   }
 
   users.forEach((user) => {

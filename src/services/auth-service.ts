@@ -1,13 +1,13 @@
-// import axios from 'axios';
+import axios from 'axios';
 import { handleError } from "../lib/handleError";
 import type { User } from "../types/User";
 import { ROLES } from '../types/roles';
-import api  from '../lib/api';
+// import api  from '../lib/api';
 // Define types for authentication
 
 
 // API URL with fallback for preview environment
-// const api = "http://localhost:8184"
+const api = "http://localhost:8184"
 
 /**
  * Authenticate a user with email and password
@@ -21,7 +21,7 @@ import api  from '../lib/api';
 
 export const registerAPI = async(fullname: string, email: string,  role: string, enable:string)=>{
     try {
-        const response = await api.post("/v1/auth/sign-up", {
+        const response = await axios.post(api + "/v1/auth/sign-up", {
             fullname,
             email,
             role,
@@ -34,7 +34,7 @@ export const registerAPI = async(fullname: string, email: string,  role: string,
             email: response.data.email,            
         };
         // console.log("datawithToken:", datawithToken);
-        await api.post(api + "tokens",datawithToken);
+        await axios.post(api + "/tokens",datawithToken);
         return datawithToken;  
     }catch (error) {
         handleError(error);
@@ -46,7 +46,7 @@ export const registerAPI = async(fullname: string, email: string,  role: string,
 export const fetchProfile = async (accessToken: string): Promise<User> => {
   try {
         // console.log("fetchProfile: Sending /v1/auth/profile request with token", accessToken);
-    const profileResponse = await api.get("/v1/auth/profile", {
+    const profileResponse = await axios.get(api + "/v1/auth/profile", {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     // console.log("fetchProfile: /v1/auth/profile response", profileResponse.data);
@@ -97,7 +97,7 @@ export const loginAPI = async (email: string, password: string) => {
     try {
       // Step 1: Authenticate to get token
       // console.log("loginAPI: Sending /v1/auth/sign-in request", { email });
-      const loginResponse = await api.post("/v1/auth/sign-in", { email, password });
+      const loginResponse = await axios.post(api + "/v1/auth/sign-in", { email, password });
       // console.log("loginAPI: /v1/auth/sign-in response", loginResponse.data);
       
       const accessToken = loginResponse.data?.data?.accessToken || loginResponse.data?.accessToken || loginResponse.data?.token;
@@ -111,7 +111,7 @@ export const loginAPI = async (email: string, password: string) => {
 
     localStorage.setItem("token", accessToken);
     localStorage.setItem("user", JSON.stringify(user));
-    api.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+    axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
     // Validate role
 
     return {
@@ -132,43 +132,43 @@ export const loginAPI = async (email: string, password: string) => {
 
 
 
-export async function authenticateUser(email: string, password: string): Promise<User | null> {
-    try {
-        const loginResponse = await api.post("/v1/auth/sign-in", { email, password });
-        const accessToken = loginResponse.data?.data?.accessToken || loginResponse.data?.accessToken || loginResponse.data?.token;
+// export async function authenticateUser(email: string, password: string): Promise<User | null> {
+//     try {
+//         const loginResponse = await axios.post(api + "/v1/auth/sign-in", { email, password });
+//         const accessToken = loginResponse.data?.data?.accessToken || loginResponse.data?.accessToken || loginResponse.data?.token;
     
-        if (!accessToken) {
-          throw new Error("No access token received from server");
-        }
+//         if (!accessToken) {
+//           throw new Error("No access token received from server");
+//         }
     
-        const profileResponse = await api.get(`${api}/v1/auth/profile`, {
-          params: { email },
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
+//         const profileResponse = await axios.get(api + "/v1/auth/profile", {
+//           params: { email },
+//           headers: { Authorization: `Bearer ${accessToken}` },
+//         });
     
-        const profileData = profileResponse.data?.data;
+//         const profileData = profileResponse.data?.data;
     
-        if (!profileData) {
-          throw new Error("No profile data received");
-        }
+//         if (!profileData) {
+//           throw new Error("No profile data received");
+//         }
     
-        const user: User = {
-          id: profileData.id,
-          email: profileData.email,
-          fullname: profileData.fullname,
-          role: profileData.role,
-          enabled: profileData.enabled,
-          createdAt: profileData.createdAt,
-          password: "",
-        };
+//         const user: User = {
+//           id: profileData.id,
+//           email: profileData.email,
+//           fullname: profileData.fullname,
+//           role: profileData.role,
+//           enabled: profileData.enabled,
+//           createdAt: profileData.createdAt,
+//           password: "",
+//         };
     
-        return user;
-      } catch (error) {
-        console.error("Error authenticating user:", error);
-        handleError(error);
-        return null;
-      }
-}
+//         return user;
+//       } catch (error) {
+//         console.error("Error authenticating user:", error);
+//         handleError(error);
+//         return null;
+//       }
+// }
 
 
 

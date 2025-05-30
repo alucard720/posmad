@@ -5,8 +5,9 @@ import { loginAPI } from "../services/auth-service"
 import axios from "axios";
 import { createUser } from "../services/user-service"
 import { ROLES } from "../types/roles" 
-import api from "../lib/api";
+// import api from "../lib/api";
 
+const api = "http://localhost:8184"
 
 type AuthContextType = {
   user: User | null
@@ -117,7 +118,7 @@ const loginUser = async (email: string, password: string) => {
     localStorage.removeItem("user")    
     setUser(null);
     setIsAuthenticated(false); 
-    api.post("/v1/auth/sign-out").catch((error)=>{
+    axios.post(api + "/v1/auth/sign-out").catch((error)=>{
       console.error("Logout error:", error);
     })   
     navigate("/")

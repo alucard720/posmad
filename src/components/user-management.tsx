@@ -2,13 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/auth-context";
-import { createUser, deleteUser, fetchUsers, updateUser } from "../services/user-service";
+import { createUser, deleteUser, updateUser } from "../services/user-service";
 import type { User } from "../types/User";
-import { roleDisplayNames, ROLES,roleUuidToCode } from "../types/roles";
+import { roleDisplayNames, ROLES, roleUuidToCode, getRoleConfig, mapUuidToRole } from "../types/roles";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import axiosInstance from "../lib/api";
+
+ const BASE_URL = "http://localhost:8184"
+
+
 
 const rolePermissions = {
   [roleUuidToCode[ROLES.PROPIETARIO]]: {
@@ -35,14 +41,12 @@ const rolePermissions = {
 }
 
 
-
-
 interface UserManagementProps {
   compact?: boolean;
 }
 
 export default function UserManagement({ compact = false }: UserManagementProps) {
-  const { user, isAuthenticated, hasPermission , register} = useAuth();
+  const { user, isAuthenticated, hasPermission , register, token, setToken} = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -62,70 +66,209 @@ export default function UserManagement({ compact = false }: UserManagementProps)
     OTHER: "bg-secondary",
     // Add more as needed
   };
+  const role = mapUuidToRole(user?.role ?? "")
+  const roleConf = getRoleConfig(role)
   
 
 
-  useEffect(() => {
-    async function loadUsers() {
-      if (!isAuthenticated) {
-        console.log("UserManagement: No autenticado, redirigiendo a /login");
+  // useEffect(() => {
+  //   async function loadUsers() {
+  //     if (!isAuthenticated) {
+  //       console.log("UserManagement: No autenticado, redirigiendo a /login");
+  //       navigate("/");
+  //       return;
+  //     }
+
+  //     if (!hasPermission(ROLES.ADMIN)) {
+  //       // console.log("UserManagement: Usuario sin rol ADMIN", { role: user?.role });
+  //       setError("Acceso denegado: se requiere rol de administrador");
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     try {
+  //       // console.log("UserManagement: Obteniendo usuarios");
+  //       const fetchedUsers = await fetchUsers();
+  //       // console.log("UserManagement: Usuarios obtenidos", fetchedUsers);
+  //       if (fetchedUsers.length > 0) {
+  //         console.log("UserManagement: First user structure", {
+  //           id: fetchedUsers[0].id,
+  //           role: fetchedUsers[0].role,
+  //           fullname: fetchedUsers[0].fullname,
+  //           email: fetchedUsers[0].email,
+  //           enabled: fetchedUsers[0].enabled,
+  //           createdAt: fetchedUsers[0].createdAt,
+  //         });
+  //       }
+  //       // console.log("UserManagement: Roles received", fetchedUsers.map(u => ({
+  //       //   id: u.id,
+  //       //   role: u.role,
+  //       //   type: typeof u.role,
+  //       //   hasRole: u.hasOwnProperty("role"),
+  //       // })));
+  //       setUsers(fetchedUsers);
+  //       setError(null);
+  //     } catch (err: any) {
+  //       // console.error("UserManagement: Error", err);
+  //       setError(err.message || "No se pudieron cargar los usuarios. Intenta de nuevo.");
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   }
+
+  //   loadUsers();
+  // }, [isAuthenticated, hasPermission, user, register]);
+
+// Validate and refresh token
+useEffect(() => {
+
+  if(!token || !isAuthenticated) return;
+
+  axiosInstance.get(`${BASE_URL}/v1/auth/profile`, {
+    headers: { Authorization: `Bearer ${token}` },
+    withCredentials: true,
+  }).then((response) => {
+    console.log("UserManagement: Token is valid", response.data);
+  }).catch((err) => {
+    console.error("UserManagement: Token validation failed", err);
+    localStorage.removeItem("token");
+  })
+  // async function validateAndRefreshToken() {
+  //   // if (!token || !isAuthenticated) {
+  //   //   // console.log("UserManagement: No token or not authenticated, skipping token validation");
+  //   //   return;
+
+
+  //   // }
+    
+  //   // try {
+  //   //   console.log("UserManagement: Validating token");
+  //   //   // Call an endpoint to validate the token (e.g., /v1/auth/profile)
+  //   //   await axios.get(`${BASE_URL}/v1/auth/profile`, {
+  //   //     headers: { Authorization: `Bearer ${token}` },
+  //   //     withCredentials: false,
+  //   //   });
+  //   //   console.log("UserManagement: Token is valid");
+  //   // } catch (err: any) {
+  //   //   console.error("UserManagement: Token validation failed", err);
+  //   //   if (err.response?.status === 401) {
+  //   //     console.log("UserManagement: Token expired, attempting to refresh");
+  //   //     try {
+  //   //       const response = await axios.post(`${BASE_URL}/refresh-token`, null, {
+  //   //         withCredentials: true, // Send jwt cookie
+  //   //       });
+  //   //       const { accessToken } = response.data;
+  //   //       if (!accessToken) {
+  //   //         throw new Error("No access token received from refresh");
+  //   //       }
+  //   //       console.log("UserManagement: Token refreshed successfully", accessToken);
+  //   //       localStorage.setItem("token", accessToken);
+  //   //       setToken(accessToken);
+  //   //     } catch (refreshErr: any) {
+  //   //       console.error("UserManagement: Token refresh failed", refreshErr);
+  //   //       localStorage.removeItem("token");
+  //   //       localStorage.removeItem("user");
+  //   //       navigate("/");
+  //   //     }
+  //   //   } else {
+  //   //     console.error("UserManagement: Unexpected error during token validation", err);
+  //   //   }
+  //   // }
+  // }
+
+  // validateAndRefreshToken();
+  // Run every 5 minutes to check token validity
+  // const interval = setInterval(validateAndRefreshToken, 5 * 60 * 1000);
+  // return () => clearInterval(interval);
+}, [token, isAuthenticated,]);
+
+
+
+// Fetch users
+useEffect(() => {
+  async function loadUsers() {
+    if (!isAuthenticated) {
+      console.log("UserManagement: No autenticado, redirigiendo a /login");
+      navigate("/");
+      return;
+    }
+
+    if (!hasPermission(ROLES.ADMIN)) {
+      console.log("UserManagement: Usuario sin rol ADMIN", { role: user?.role });
+      setError("Acceso denegado: se requiere rol de administrador");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      console.log("UserManagement: Obteniendo usuarios");
+      const response = await axios.get(`${BASE_URL}/v1/users`, {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+      });
+      const fetchedUsers: User[] = response.data?.data?.records || [];
+      console.log("UserManagement: Usuarios obtenidos", fetchedUsers);
+      if (fetchedUsers.length > 0) {
+        console.log("UserManagement: First user structure", {
+          id: fetchedUsers[0].id,
+          role: fetchedUsers[0].role,
+          fullname: fetchedUsers[0].fullname,
+          email: fetchedUsers[0].email,
+          enabled: fetchedUsers[0].enabled,
+          createdAt: fetchedUsers[0].createdAt,
+        });
+      }
+      setUsers(fetchedUsers);
+      setError(null);
+    } catch (err: any) {
+      console.error("UserManagement: Error", err);
+      if (err.message.includes("CORS")) {
+        setError("Error de CORS: verifica la configuración del servidor.");
+      } else if (err.response?.status === 401 || err.response?.status === 403) {
+        console.log("UserManagement: Token inválido o acceso denegado, redirigiendo a /login");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
         navigate("/");
-        return;
-      }
-
-      if (!hasPermission(ROLES.ADMIN)) {
-        // console.log("UserManagement: Usuario sin rol ADMIN", { role: user?.role });
-        setError("Acceso denegado: se requiere rol de administrador");
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        // console.log("UserManagement: Obteniendo usuarios");
-        const fetchedUsers = await fetchUsers();
-        // console.log("UserManagement: Usuarios obtenidos", fetchedUsers);
-        if (fetchedUsers.length > 0) {
-          console.log("UserManagement: First user structure", {
-            id: fetchedUsers[0].id,
-            role: fetchedUsers[0].role,
-            fullname: fetchedUsers[0].fullname,
-            email: fetchedUsers[0].email,
-            enabled: fetchedUsers[0].enabled,
-            createdAt: fetchedUsers[0].createdAt,
-          });
-        }
-        // console.log("UserManagement: Roles received", fetchedUsers.map(u => ({
-        //   id: u.id,
-        //   role: u.role,
-        //   type: typeof u.role,
-        //   hasRole: u.hasOwnProperty("role"),
-        // })));
-        setUsers(fetchedUsers);
-        setError(null);
-      } catch (err: any) {
-        // console.error("UserManagement: Error", err);
+      } else {
         setError(err.message || "No se pudieron cargar los usuarios. Intenta de nuevo.");
-      } finally {
-        setIsLoading(false);
       }
+    } finally {
+      setIsLoading(false);
     }
+  }
 
-    loadUsers();
-  }, []);
+  loadUsers();
+}, [isAuthenticated, hasPermission, navigate, user, token]);
+
   
-  useEffect(() => {
-    if (activeTab !== "all"){
-      setUsers(users.filter((user)=> user.role === activeTab));
-    }
-  }, [activeTab]);
+  
+  // useEffect(() => {
+  //   if (activeTab !== "all"){
+  //     setUsers(users.filter((user)=> user.role === activeTab));
+  //   }
+  // }, [activeTab]);
 
 
- const filteredUsers = users.filter((user) => 
-  user.fullname.toLowerCase().includes(searchTerm.toLowerCase()) || 
-  user.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
-  user.role?.toLowerCase().includes(searchTerm.toLowerCase())
- );
-
+  const filteredUsers = Array.isArray(users) ? users.filter((user) => {
+    const userRoleDisplayName = typeof user.role === "string" && user.role in roleDisplayNames
+      ? roleDisplayNames[user.role as keyof typeof roleDisplayNames]
+      : user.role || "";
+    const matchesRole = activeTab === "all" || userRoleDisplayName === activeTab;
+    const matchesSearch = 
+      user.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      userRoleDisplayName.toLowerCase().includes(searchTerm.toLowerCase());
+    console.log("UserManagement: Filtering user", {
+      userId: user.id,
+      userRole: user.role,
+      userRoleDisplayName,
+      activeTab,
+      matchesRole,
+      searchTerm,
+      matchesSearch,
+    });
+    return matchesRole && matchesSearch;
+  }) : [];
 
  const displayedUsers = compact ? filteredUsers.slice(0, 5) : filteredUsers;
 
@@ -244,19 +387,19 @@ const handleSubmit = async (e: React.FormEvent) =>{
   setShowModal(false);
 }
 
-const userCounts ={
-  all: users.length,
-  active: users.filter(user => user.enabled).length,
-  inactive: users.filter(user => !user.enabled).length,
-  admin: users.filter(user => user.role === ROLES.ADMIN).length,
-  cashier: users.filter(user => user.role === ROLES.CAJERO).length,
-  almacenista: users.filter(user => user.role === ROLES.ALMACENISTA).length,
-  propietario: users.filter(user => user.role === ROLES.PROPIETARIO).length,
-}
+const userCounts = {
+  all: Array.isArray(users) ? users.length : 0,
+  active: Array.isArray(users) ? users.filter(user => user.enabled).length : 0,
+  inactive: Array.isArray(users) ? users.filter(user => !user.enabled).length : 0,
+  admin: Array.isArray(users) ? users.filter(user => user.role === ROLES.ADMIN).length : 0,
+  cajero: Array.isArray(users) ? users.filter(user => user.role === ROLES.CAJERO).length : 0,
+  almacenista: Array.isArray(users) ? users.filter(user => user.role === ROLES.ALMACENISTA).length : 0,
+  propietario: Array.isArray(users) ? users.filter(user => user.role === ROLES.PROPIETARIO).length : 0,
+};
 
-  if (!isAuthenticated) {
-    return null; // Redirect handled in useEffect
-  }
+  // if (!isAuthenticated) {
+  //   return null; // Redirect handled in useEffect
+  // }
 
   // return (
   //   <div className="container p-4">
@@ -450,7 +593,7 @@ const userCounts ={
             className={`btn ${activeTab === roleDisplayNames.CAJERO ? "btn-secondary" : "btn-outline-secondary"}`}
             onClick={() => setActiveTab(roleDisplayNames.CAJERO)}
           >
-            Cajeros <span className="badge bg-light text-dark ms-1">{userCounts.cashier}</span>
+            Cajeros <span className="badge bg-light text-dark ms-1">{userCounts.cajero}</span>
           </button>
         </div>
       </div>
@@ -463,7 +606,7 @@ const userCounts ={
                 <th scope="col">Nombre</th>
                 <th scope="col">Email</th>
                 <th scope="col">Rol</th>
-                <th scope="col">Último Acceso</th>
+                <th scope="col">Creación</th>
                 <th scope="col">Estado</th>
                 <th scope="col" className="text-end">
                   Acciones
@@ -477,11 +620,13 @@ const userCounts ={
                     <td className="fw-medium">{user.fullname}</td>
                     <td>{user.email}</td>
                     <td>
-                    <span className={`badge ${roleBadgeColors[user.role ?? ""] ?? "bg-secondary"}`}>
-  {typeof user.role === "string" && user.role in rolePermissions
-    ? rolePermissions[user.role as keyof typeof rolePermissions].label
-    : `Rol desconocido (${user.role ?? "undefined"})`}
-</span>
+                    <span className={`badge bg-${getRoleConfig(mapUuidToRole(user.role ?? "")).badgeColor}`}>
+                    {getRoleConfig(mapUuidToRole(user.role ?? "")).label}
+                    </span>
+
+                    {/* <span className={`badge bg-${roleConf?.badgeColor ?? "secondary"}`}>
+                      {roleConf?.label ?? ` (${user.role ?? "undefined"})`}
+                    </span> */}
 
                     </td>
                     {!compact && <td className="text-secondary">{user.createdAt || "-"}</td>}
