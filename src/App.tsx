@@ -13,7 +13,7 @@ import LoginPage  from "./pages/login"
 const DashboardLayout = lazy(() => import("./pages/dashboard-layout"))
 const HomePage = lazy(() => import("./pages/home"))
 // const ProductsPage = lazy(() => import("./pages/products"))
-// const OrdersPage = lazy(() => import("./pages/orders"))
+const Transaciones = lazy(() => import("./pages/transaciones-page"))
 const UsersPage = lazy(() => import("./pages/user"))
 // const NotFoundPage = lazy(() => import("./pages/not-found"))
 
@@ -28,7 +28,7 @@ function App() {
               {/* Public routes */}
               <Route path="/" element={<LoginPage />} />
               <Route path="/user" element={<UsersPage />} />
-
+              <Route path="/transaciones" element={<Transaciones />} />
               {/* Protected routes */}
               <Route path="/dashboard" element={<DashboardLayout />}>
                 <Route index element={<HomePage />} />

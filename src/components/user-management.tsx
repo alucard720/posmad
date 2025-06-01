@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
-import axios from "axios";
+// import axios from "axios";
 import axiosInstance from "../lib/api";
 
  const BASE_URL = "http://localhost:8184"
@@ -71,117 +71,77 @@ export default function UserManagement({ compact = false }: UserManagementProps)
   
 
 
-  // useEffect(() => {
-  //   async function loadUsers() {
-  //     if (!isAuthenticated) {
-  //       console.log("UserManagement: No autenticado, redirigiendo a /login");
-  //       navigate("/");
-  //       return;
-  //     }
-
-  //     if (!hasPermission(ROLES.ADMIN)) {
-  //       // console.log("UserManagement: Usuario sin rol ADMIN", { role: user?.role });
-  //       setError("Acceso denegado: se requiere rol de administrador");
-  //       setIsLoading(false);
-  //       return;
-  //     }
-
-  //     try {
-  //       // console.log("UserManagement: Obteniendo usuarios");
-  //       const fetchedUsers = await fetchUsers();
-  //       // console.log("UserManagement: Usuarios obtenidos", fetchedUsers);
-  //       if (fetchedUsers.length > 0) {
-  //         console.log("UserManagement: First user structure", {
-  //           id: fetchedUsers[0].id,
-  //           role: fetchedUsers[0].role,
-  //           fullname: fetchedUsers[0].fullname,
-  //           email: fetchedUsers[0].email,
-  //           enabled: fetchedUsers[0].enabled,
-  //           createdAt: fetchedUsers[0].createdAt,
-  //         });
-  //       }
-  //       // console.log("UserManagement: Roles received", fetchedUsers.map(u => ({
-  //       //   id: u.id,
-  //       //   role: u.role,
-  //       //   type: typeof u.role,
-  //       //   hasRole: u.hasOwnProperty("role"),
-  //       // })));
-  //       setUsers(fetchedUsers);
-  //       setError(null);
-  //     } catch (err: any) {
-  //       // console.error("UserManagement: Error", err);
-  //       setError(err.message || "No se pudieron cargar los usuarios. Intenta de nuevo.");
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   }
-
-  //   loadUsers();
-  // }, [isAuthenticated, hasPermission, user, register]);
-
+  
 // Validate and refresh token
-useEffect(() => {
+// useEffect(() => {
 
-  if(!token || !isAuthenticated) return;
+//   if(!token || !isAuthenticated) return;
 
-  axiosInstance.get(`${BASE_URL}/v1/auth/profile`, {
-    headers: { Authorization: `Bearer ${token}` },
-    withCredentials: true,
-  }).then((response) => {
-    console.log("UserManagement: Token is valid", response.data);
-  }).catch((err) => {
-    console.error("UserManagement: Token validation failed", err);
-    localStorage.removeItem("token");
-  })
-  // async function validateAndRefreshToken() {
-  //   // if (!token || !isAuthenticated) {
-  //   //   // console.log("UserManagement: No token or not authenticated, skipping token validation");
-  //   //   return;
+//   axiosInstance.get(`${BASE_URL}/v1/auth/profile`, {
+//     headers: { Authorization: `Bearer ${token}` },
+//     withCredentials: true,
+//   }).then((response) => {
+//     console.log("UserManagement: Token is valid", response.data);
+//   }).catch((err) => {
+//     console.error("UserManagement: Token validation failed", err);
+//     localStorage.removeItem("token");
+//   })
+//   async function validateAndRefreshToken() {
+//     if (!token || !isAuthenticated) {
+//       // console.log("UserManagement: No token or not authenticated, skipping token validation");
+//       return;
 
 
-  //   // }
+//     }
     
-  //   // try {
-  //   //   console.log("UserManagement: Validating token");
-  //   //   // Call an endpoint to validate the token (e.g., /v1/auth/profile)
-  //   //   await axios.get(`${BASE_URL}/v1/auth/profile`, {
-  //   //     headers: { Authorization: `Bearer ${token}` },
-  //   //     withCredentials: false,
-  //   //   });
-  //   //   console.log("UserManagement: Token is valid");
-  //   // } catch (err: any) {
-  //   //   console.error("UserManagement: Token validation failed", err);
-  //   //   if (err.response?.status === 401) {
-  //   //     console.log("UserManagement: Token expired, attempting to refresh");
-  //   //     try {
-  //   //       const response = await axios.post(`${BASE_URL}/refresh-token`, null, {
-  //   //         withCredentials: true, // Send jwt cookie
-  //   //       });
-  //   //       const { accessToken } = response.data;
-  //   //       if (!accessToken) {
-  //   //         throw new Error("No access token received from refresh");
-  //   //       }
-  //   //       console.log("UserManagement: Token refreshed successfully", accessToken);
-  //   //       localStorage.setItem("token", accessToken);
-  //   //       setToken(accessToken);
-  //   //     } catch (refreshErr: any) {
-  //   //       console.error("UserManagement: Token refresh failed", refreshErr);
-  //   //       localStorage.removeItem("token");
-  //   //       localStorage.removeItem("user");
-  //   //       navigate("/");
-  //   //     }
-  //   //   } else {
-  //   //     console.error("UserManagement: Unexpected error during token validation", err);
-  //   //   }
-  //   // }
-  // }
+//     try {
+//       console.log("UserManagement: Validating token");
+//       // Call an endpoint to validate the token (e.g., /v1/auth/profile)
+//       await axiosInstance.get(`${BASE_URL}/v1/auth/profile`, {
+//         headers: { Authorization: `Bearer ${token}` },
+//         withCredentials: false,
+//       });
+//       console.log("UserManagement: Token is valid");
+//     } catch (err: any) {
+//       console.error("UserManagement: Token validation failed", err);
+//       if (err.response?.status === 401) {
+//         console.log("UserManagement: Token expired, attempting to refresh");
+//         try {
+//           const response = await axiosInstance.post(`${BASE_URL}/refresh-token`, null, {
+//             withCredentials: true, // Send jwt cookie
+//           });
+//           const { accessToken } = response.data;
+//           if (!accessToken) {
+//             throw new Error("No access token received from refresh");
+//           }
+//           console.log("UserManagement: Token refreshed successfully", accessToken);
+//           localStorage.setItem("token", accessToken);
+//           setToken(accessToken);
+//         } catch (refreshErr: any) {
+//           console.error("UserManagement: Token refresh failed", refreshErr);
+//           localStorage.removeItem("token");
+//           localStorage.removeItem("user");
+//           navigate("/");
+//         }
+//       } else {
+//         console.error("UserManagement: Unexpected error during token validation", err);
+//       }
+//     }
+//   }
 
-  // validateAndRefreshToken();
-  // Run every 5 minutes to check token validity
-  // const interval = setInterval(validateAndRefreshToken, 5 * 60 * 1000);
-  // return () => clearInterval(interval);
-}, [token, isAuthenticated,]);
+//   validateAndRefreshToken();
+//   // Run every 5 minutes to check token validity
+//   const interval = setInterval(validateAndRefreshToken, 5 * 60 * 1000);
+//   return () => clearInterval(interval);
+// }, [token, isAuthenticated,]);
 
+useEffect(() => {
+  if (!token || !isAuthenticated) return;
+
+  axiosInstance.get('/v1/auth/profile')
+    .then(() => console.log("UserManagement: Profile valid"))
+    .catch(err => console.error("Profile fetch failed", err));
+}, [token, isAuthenticated]);
 
 
 // Fetch users
@@ -202,7 +162,7 @@ useEffect(() => {
 
     try {
       console.log("UserManagement: Obteniendo usuarios");
-      const response = await axios.get(`${BASE_URL}/v1/users`, {
+      const response = await axiosInstance.get(`${BASE_URL}/v1/users`, {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
       });

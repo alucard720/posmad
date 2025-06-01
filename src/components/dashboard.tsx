@@ -130,7 +130,7 @@ export default function Dashboard() {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <header className="bg-white shadow-sm p-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-slate-800">Vende</h1>
+          <h1 className="text-2xl font-bold text-slate-800">Vender</h1>
           <div className="flex items-center gap-4">
             <button className="flex items-center text-gray-600 gap-1">
               <span className="text-sm">Ayuda</span>

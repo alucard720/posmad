@@ -44,7 +44,7 @@ const menuItems = [
     roles: [ROLES.ADMIN, ROLES.PROPIETARIO],
   },
   {
-    href: "/transacciones",
+    href: "/transaciones",
     icon: "fa-exchange-alt",
     label: "Transacciones",
     roles: [ROLES.ADMIN, ROLES.PROPIETARIO],
