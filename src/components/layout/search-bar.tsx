@@ -1,6 +1,6 @@
 "use client"
 
-import { useProducts } from "../contexts/product-context"
+import { useProducts } from "../../contexts/product-context"
 import { useState } from "react"
 
 export function SearchBar() {

@@ -1,9 +1,9 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSearch, faChevronDown, faQrcode, faBolt, faBars, faPlus, faShoppingCart, faX, faChevronRight } from '@fortawesome/free-solid-svg-icons'
-import { SidebarItem } from "./sidebar-item"
-import { ProductCard } from "./product-card"
-import { CartItem } from "./cart-item"
+import { SidebarItem } from "./layout/sidebar-item"
+import { ProductCard } from "../components/productos/product-card"
+import { CartItem } from "./productos/cart-item"
 import { useProducts } from "../contexts/product-context"
 import { useCart } from "../contexts/cart-context"
 import { useUser } from "../contexts/user-context"

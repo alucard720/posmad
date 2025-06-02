@@ -1,11 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { CartItem } from "./cart-item"
-import { PaymentMethods } from "./payment-methods"
-import { useCart } from "../contexts/cart-context"
-import { useUser } from "../contexts/user-context"
-import { formatCurrency } from "../lib/utils"
+import { CartItem } from "../productos/cart-item"
+import { PaymentMethods } from "../pagos/payment-methods"
+import { useCart } from "../../contexts/cart-context"
+import { useUser } from "../../contexts/user-context"
+import { formatCurrency } from "../../lib/utils"
 
 export function CartSidebar() {
   const { cart, clearCart, cartTotal, isCartOpen, setIsCartOpen, addPaymentRecord } = useCart()

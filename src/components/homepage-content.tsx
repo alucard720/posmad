@@ -1,6 +1,6 @@
 
 import { SearchBar } from "./search-bar"
-import { ProductGrid } from "./product-grid"
+import { ProductGrid } from "./productos/product-grid"
 import { useAuth } from "../contexts/auth-context"
 
 export function HomepageContent() {

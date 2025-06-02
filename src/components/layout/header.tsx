@@ -1,8 +1,8 @@
 "use client"
 
-import { useAuth } from "../contexts/auth-context"
+import { useAuth } from "../../contexts/auth-context"
 import { useState } from "react"
-import { ROLES} from "../types/roles"
+import { ROLES} from "../../types/roles"
 
 type HeaderProps = {
   title: string

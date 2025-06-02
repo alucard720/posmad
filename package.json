@@ -24,6 +24,7 @@
     "react-fontawesome": "^1.7.1",
     "react-hook-form": "^7.56.4",
     "react-router-dom": "^7.6.0",
+    "react-tooltip": "^5.28.1",
     "tailwind-merge": "^3.3.0",
     "yup": "^1.6.1"
   },

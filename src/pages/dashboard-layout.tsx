@@ -2,7 +2,7 @@
 
 import { Outlet } from "react-router-dom"
 import { useState, useEffect } from "react"
-import Sidebar from "../components/sidebar"
+import Sidebar from "../components/layout/sidebar"
 
 export default function DashboardLayout() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)

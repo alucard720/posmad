@@ -1,5 +1,5 @@
-import { useCart } from "../contexts/cart-context"
-import { formatCurrency } from "../lib/utils"
+import { useCart } from "../../contexts/cart-context"
+import { formatCurrency } from "../../lib/utils"
 
 type CartItemProps = {
   item: {

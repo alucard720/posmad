@@ -4,11 +4,11 @@ import { useAuth } from "../contexts/auth-context"
 import { useNavigate } from "react-router-dom"
 import { useEffect, useState, type ReactNode } from "react"
 // import { isPreviewEnvironment } from "../services/auth-service"
-import { type Role } from "../types/User"
+import { type UserRole } from "../types/roles"
 
 type RoleGuardProps = {
   children: ReactNode
-  allowedRoles: Role | Role[]
+  allowedRoles: UserRole | UserRole[]
   fallback?: ReactNode
 }
 

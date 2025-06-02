@@ -1,13 +1,12 @@
-
 import { useAuth } from "../contexts/auth-context"
-import Transaciones from "../components/transaciones/transaciones"
+import { Header } from "../components/layout/header"
+import ProductManagement from "../components/productos/product-management"
 import Sidebar from "../components/layout/sidebar"
 import { ROLES } from "../types/roles"
-import { Header } from "../components/layout/header"
 
-export default function TransacionesPage() {
+export default function ProductosPage() {
   const { hasPermission } = useAuth()
-  const isAdmin = hasPermission(ROLES.ADMIN)
+  const isAdmin = hasPermission([ROLES.ADMIN, ROLES.PROPIETARIO])
 
   return (
     <>   
@@ -17,7 +16,7 @@ export default function TransacionesPage() {
           <div className="d-flex flex-grow-1 overflow-hidden">
             <Sidebar />
             <div className="flex-grow-1  p-4" style={{transition: "margin-left 0.3s ease"}}>
-              <Transaciones/>                     
+              <ProductManagement/>                     
             </div>
           </div>
         </div>

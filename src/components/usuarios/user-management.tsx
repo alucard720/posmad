@@ -1,16 +1,16 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import { useAuth } from "../contexts/auth-context";
-import { createUser, deleteUser, updateUser } from "../services/user-service";
-import type { User } from "../types/User";
-import { roleDisplayNames, ROLES, roleUuidToCode, getRoleConfig, mapUuidToRole } from "../types/roles";
+import { useAuth } from "../../contexts/auth-context";
+import { createUser, deleteUser, updateUser } from "../../services/user-service";
+import type { User } from "../../types/User";
+import { roleDisplayNames, ROLES, roleUuidToCode, getRoleConfig, mapUuidToRole } from "../../types/roles";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 // import axios from "axios";
-import axiosInstance from "../lib/api";
+import axiosInstance from "../../lib/api";
 
  const BASE_URL = "http://localhost:8184"
 

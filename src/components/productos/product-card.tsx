@@ -1,6 +1,6 @@
-import { useCart } from "../contexts/cart-context"
-import type { Product } from "../contexts/product-context"
-import { formatCurrency } from "../lib/utils"
+import { useCart } from "../../contexts/cart-context"
+import type { Product } from "../../contexts/product-context"
+import { formatCurrency } from "../../lib/utils"
 
 export function ProductCard({ product }: { product: Product }) {
   const { addToCart } = useCart()

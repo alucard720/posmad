@@ -1,7 +1,7 @@
 "use client"
 
 import { ProductCard } from "./product-card"
-import { useProducts } from "../contexts/product-context"
+import { useProducts } from "../../contexts/product-context"
 
 export function ProductGrid() {
   const { filteredProducts, loading, error } = useProducts()

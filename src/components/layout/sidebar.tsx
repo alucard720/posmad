@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
-import { useAuth } from "../contexts/auth-context"
-import { ROLES } from "../types/roles"
+import { useAuth } from "../../contexts/auth-context"
+import { ROLES } from "../../types/roles"
+import { Tooltip } from "react-tooltip"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faBoxOpen, faPlus, faSearch, faFilter, faDownload } from "@fortawesome/free-solid-svg-icons"
+
 
 
 // Define menu items with role-based access
@@ -12,13 +16,14 @@ const menuItems = [
     label: "Vender",
     roles: [ROLES.ADMIN, ROLES.CAJERO, ROLES.ALMACENISTA, ROLES.PROPIETARIO, ROLES.USER],
     highlight: true,
+    tooltip: "Vender",
   },
-  {
-    href: "/demo",
-    icon: "fa-shopping-cart",
-    label: "Demo Pagos",
-    roles: [ROLES.ADMIN, ROLES.CAJERO],
-  },
+  // {
+  //   href: "/demo",
+  //   icon: "fa-shopping-cart",
+  //   label: "Demo Pagos",
+  //   roles: [ROLES.ADMIN, ROLES.CAJERO],
+  // },
   // {
   //   href: "/pedidos",
   //   icon: "fa-shopping-cart",
@@ -27,27 +32,31 @@ const menuItems = [
   // },
   {
     href: "/productos",
-    icon: "fa-th",
+    icon: "fa-light fa-boxes-stacked", 
     label: "Productos",
     roles: [ROLES.ADMIN, ROLES.CAJERO, ROLES.ALMACENISTA, ROLES.PROPIETARIO, ROLES.USER],
+    tooltip: "Productos",
   },
   {
     href: "/catalogo",
     icon: "fa-list",
     label: "Catálogo",
     roles: [ROLES.ADMIN, ROLES.CAJERO],
+    tooltip: "Catálogo",
   },
   {
     href: "/clientes",
     icon: "fa-users",
     label: "Clientes",
     roles: [ROLES.ADMIN, ROLES.PROPIETARIO],
+    tooltip: "Clientes",
   },
   {
     href: "/transaciones",
     icon: "fa-exchange-alt",
     label: "Transacciones",
     roles: [ROLES.ADMIN, ROLES.PROPIETARIO],
+    tooltip: "Transacciones",
   },
   // {
   //   href: "/finanzas",
@@ -72,12 +81,14 @@ const menuItems = [
     icon: "fa-user-cog",
     label: "Gestión Usuarios",
     roles: [ROLES.ADMIN],
+    tooltip: "Gestión Usuarios",
   },
   {
     href: "/configuraciones",
     icon: "fa-cog",
     label: "Configuraciones",
     roles: [ROLES.ADMIN],
+    tooltip: "Configuraciones",
   },
 ]
 
@@ -93,8 +104,8 @@ export default function Sidebar() {
   // Handle responsive behavior
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 992)
-      if (window.innerWidth < 992) {
+      setIsMobile(window.innerWidth < 800)
+      if (window.innerWidth < 800) {
         setExpanded(false)
       }
     }
@@ -126,7 +137,10 @@ export default function Sidebar() {
         style={{
           width: expanded ? "210px" : "70px",
           transition: "width 0.3s ease",
+          position: "relative",
+          flexShrink: 0,
           zIndex: 1050,
+
         }}
       >
         {/* Toggle button */}
@@ -152,7 +166,10 @@ export default function Sidebar() {
               onClick={() => isMobile && setExpanded(false)}
             >
               <div className="sidebar-icon">
-                <i className={`fas ${item.icon}`}></i>
+                <i className={`fas ${item.icon}`}
+                data-tooltip-id="sidebar-tooltip"
+                data-tooltip-content={!expanded ? item.tooltip || item.label : undefined}
+                ></i>
               </div>
               <span className={`${expanded ? "d-inline" : "d-none"}`} style={{ opacity: expanded ? 1 : 0 }}>
                 {item.label}
@@ -186,6 +203,7 @@ export default function Sidebar() {
             <span className={`${expanded ? "d-inline" : "d-none"}`} style={{ opacity: expanded ? 1 : 0 }}>
               Salir
             </span>
+            <Tooltip id="logout-tooltip" />
           </button>
         </div>
       </div>
