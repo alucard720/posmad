@@ -16,6 +16,7 @@ const ProductsPage = lazy(() => import("./pages/productos-page"))
 const Transaciones = lazy(() => import("./pages/transaciones-page"))
 const AddProduct = lazy(() => import("./components/productos/addProduct"))
 const UsersPage = lazy(() => import("./pages/user"))
+const HistorialVentas = lazy(() => import("./pages/ventasH"))
 // const NotFoundPage = lazy(() => import("./pages/not-found"))
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
               <Route path="/transaciones" element={<Transaciones />} />
               <Route path="/productos" element={<ProductsPage />} />
               <Route path="/productos/addProduct" element={<AddProduct />} />
+              <Route path="/historia-ventas" element={<HistorialVentas />} />
               {/* Protected routes */}
               <Route path="/dashboard" element={<DashboardLayout />}>
                 <Route index element={<HomePage />} />

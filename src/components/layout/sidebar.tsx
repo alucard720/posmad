@@ -38,11 +38,11 @@ const menuItems = [
     tooltip: "Productos",
   },
   {
-    href: "/catalogo",
-    icon: "fa-list",
-    label: "Catálogo",
+    href: "/historia-ventas",
+    icon: "fa-brands fa-sellcast",
+    label: "Historia de Ventas",
     roles: [ROLES.ADMIN, ROLES.CAJERO],
-    tooltip: "Catálogo",
+    tooltip: "Historia de Ventas",
   },
   {
     href: "/clientes",

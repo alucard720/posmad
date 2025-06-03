@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Header } from "../layout/header"
 import { RoleGuard } from "../analitica/role-guard"
-import { useTransactions } from "../../lib/use-transacion"
+import { useTransactions } from "../../hooks/use-transacion"
 import { useAuth } from "../../contexts/auth-context"
 import {  type Transaction } from "../../types/transacion"
 import { TransactionFiltersComponent } from "./transaction-filters"
