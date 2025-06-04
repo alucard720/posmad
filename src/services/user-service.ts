@@ -72,9 +72,8 @@ export async function fetchUserById(id: string): Promise<User | null> {
 // Create a new user
 export async function createUser(user: Omit<User, "id">): Promise<User | null> {
   try {
-    const response = await api.post(`${api}/v1/users`, user)
-
-    return response.data?.data?.records || null
+    const response = await api.post("/v1/users", user)
+    return response.data?.data || null
   } catch (error) {
     console.error("Error creating user:", error)
     return null
@@ -84,10 +83,16 @@ export async function createUser(user: Omit<User, "id">): Promise<User | null> {
 // Update an existing user
 export async function updateUser(id: string, updates: Partial<User>): Promise<User | null> {
   try {
-    const response = await api.put("/v1/users/${id}", updates)
+    console.log("updateUser: Updating user", {
+      id,
+      updates,
+    })
+    const response = await api.put(`/v1/users/${id}`, {
+      ...updates,
+      enabled: updates.enabled 
+    })
 
-    return response.data?.data?.records || null
-
+    return response.data?.data || null
   } catch (error) {
     console.error(`Error updating user with ID ${id}:`, error)
     return null
@@ -99,7 +104,7 @@ export async function deleteUser(id: string): Promise<boolean> {
   try {
     const response = await api.delete("/v1/users/${id}")
 
-    return response.data?.data?.records || false
+    return response.data?.records || false
   } catch (error) {
     console.error(`Error deleting user with ID ${id}:`, error)
     return false

@@ -9,7 +9,6 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
-// import axios from "axios";
 import axiosInstance from "../../lib/api";
 
  const BASE_URL = "http://localhost:8184"
@@ -50,101 +49,36 @@ export default function UserManagement({ compact = false }: UserManagementProps)
   const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState("all");
   const [error, setError] = useState<string | null>(null);
   const [isloading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const navigate = useNavigate();
-  const roleBadgeColors: { [key: string]: string } = {
-    ADMIN: "bg-primary",
-    CAJERO: "bg-info",
-    MANAGER: "bg-success",
-    SUPERVISOR: "bg-warning",
-    EMPLOYEE: "bg-secondary",
-    CUSTOMER: "bg-dark",
-    GUEST: "bg-light text-dark",
-    OTHER: "bg-secondary",
-    // Add more as needed
-  };
+  // const roleBadgeColors: { [key: string]: string } = {
+  //   ADMIN: "bg-primary",
+  //   CAJERO: "bg-info",
+  //   MANAGER: "bg-success",
+  //   SUPERVISOR: "bg-warning",
+  //   EMPLOYEE: "bg-secondary",
+  //   CUSTOMER: "bg-dark",
+  //   GUEST: "bg-light text-dark",
+  //   OTHER: "bg-secondary",
+  //   // Agregar más como se necesite
+  // };
   const role = mapUuidToRole(user?.role ?? "")
   const roleConf = getRoleConfig(role)
-  
-
-
-  
-// Validate and refresh token
-// useEffect(() => {
-
-//   if(!token || !isAuthenticated) return;
-
-//   axiosInstance.get(`${BASE_URL}/v1/auth/profile`, {
-//     headers: { Authorization: `Bearer ${token}` },
-//     withCredentials: true,
-//   }).then((response) => {
-//     console.log("UserManagement: Token is valid", response.data);
-//   }).catch((err) => {
-//     console.error("UserManagement: Token validation failed", err);
-//     localStorage.removeItem("token");
-//   })
-//   async function validateAndRefreshToken() {
-//     if (!token || !isAuthenticated) {
-//       // console.log("UserManagement: No token or not authenticated, skipping token validation");
-//       return;
-
-
-//     }
     
-//     try {
-//       console.log("UserManagement: Validating token");
-//       // Call an endpoint to validate the token (e.g., /v1/auth/profile)
-//       await axiosInstance.get(`${BASE_URL}/v1/auth/profile`, {
-//         headers: { Authorization: `Bearer ${token}` },
-//         withCredentials: false,
-//       });
-//       console.log("UserManagement: Token is valid");
-//     } catch (err: any) {
-//       console.error("UserManagement: Token validation failed", err);
-//       if (err.response?.status === 401) {
-//         console.log("UserManagement: Token expired, attempting to refresh");
-//         try {
-//           const response = await axiosInstance.post(`${BASE_URL}/refresh-token`, null, {
-//             withCredentials: true, // Send jwt cookie
-//           });
-//           const { accessToken } = response.data;
-//           if (!accessToken) {
-//             throw new Error("No access token received from refresh");
-//           }
-//           console.log("UserManagement: Token refreshed successfully", accessToken);
-//           localStorage.setItem("token", accessToken);
-//           setToken(accessToken);
-//         } catch (refreshErr: any) {
-//           console.error("UserManagement: Token refresh failed", refreshErr);
-//           localStorage.removeItem("token");
-//           localStorage.removeItem("user");
-//           navigate("/");
-//         }
-//       } else {
-//         console.error("UserManagement: Unexpected error during token validation", err);
-//       }
-//     }
-//   }
 
-//   validateAndRefreshToken();
-//   // Run every 5 minutes to check token validity
-//   const interval = setInterval(validateAndRefreshToken, 5 * 60 * 1000);
-//   return () => clearInterval(interval);
-// }, [token, isAuthenticated,]);
 
 useEffect(() => {
   if (!token || !isAuthenticated) return;
-
   axiosInstance.get('/v1/auth/profile')
     .then(() => console.log("UserManagement: Profile valid"))
     .catch(err => console.error("Profile fetch failed", err));
 }, [token, isAuthenticated]);
 
 
-// Fetch users
+// Buscar usuarios
 useEffect(() => {
   async function loadUsers() {
     if (!isAuthenticated) {
@@ -161,23 +95,23 @@ useEffect(() => {
     }
 
     try {
-      console.log("UserManagement: Obteniendo usuarios");
+      // console.log("UserManagement: Obteniendo usuarios");
       const response = await axiosInstance.get(`${BASE_URL}/v1/users`, {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
       });
       const fetchedUsers: User[] = response.data?.data?.records || [];
-      console.log("UserManagement: Usuarios obtenidos", fetchedUsers);
-      if (fetchedUsers.length > 0) {
-        console.log("UserManagement: First user structure", {
-          id: fetchedUsers[0].id,
-          role: fetchedUsers[0].role,
-          fullname: fetchedUsers[0].fullname,
-          email: fetchedUsers[0].email,
-          enabled: fetchedUsers[0].enabled,
-          createdAt: fetchedUsers[0].createdAt,
-        });
-      }
+      // console.log("UserManagement: Usuarios obtenidos", fetchedUsers);
+      // if (fetchedUsers.length > 0) {
+      //   console.log("UserManagement: First user structure", {
+      //     id: fetchedUsers[0].id,
+      //     role: fetchedUsers[0].role,
+      //     fullname: fetchedUsers[0].fullname,
+      //     email: fetchedUsers[0].email,
+      //     enabled: fetchedUsers[0].enabled,
+      //     createdAt: fetchedUsers[0].createdAt,
+      //   });
+      // }
       setUsers(fetchedUsers);
       setError(null);
     } catch (err: any) {
@@ -210,23 +144,15 @@ useEffect(() => {
 
 
   const filteredUsers = Array.isArray(users) ? users.filter((user) => {
-    const userRoleDisplayName = typeof user.role === "string" && user.role in roleDisplayNames
-      ? roleDisplayNames[user.role as keyof typeof roleDisplayNames]
-      : user.role || "";
-    const matchesRole = activeTab === "all" || userRoleDisplayName === activeTab;
-    const matchesSearch = 
+    const matchesRole = 
+    activeTab === "all" ||   
+    activeTab === "administradores" && user.role === ROLES.ADMIN ||
+    activeTab === "propietarios" && user.role === ROLES.PROPIETARIO ||
+    activeTab === "cajeros" && user.role === ROLES.CAJERO ||
+    activeTab === "usuarios" && user.role === ROLES.USER;
+    const matchesSearch =
       user.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      userRoleDisplayName.toLowerCase().includes(searchTerm.toLowerCase());
-    console.log("UserManagement: Filtering user", {
-      userId: user.id,
-      userRole: user.role,
-      userRoleDisplayName,
-      activeTab,
-      matchesRole,
-      searchTerm,
-      matchesSearch,
-    });
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesRole && matchesSearch;
   }) : [];
 
@@ -235,20 +161,21 @@ useEffect(() => {
  
 
  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-  const { name, value } = e.target;
   if (!currentUser) return;
-  setCurrentUser({
-    ...currentUser,
-    [name]: value,
-    // Ensure required fields are never undefined
-    id: currentUser.id ?? "",
-    email: currentUser.email ?? "",
-    fullname: currentUser.fullname ?? "",
-    password: currentUser.password ?? "",
-    role: currentUser.role ?? "",
-    enabled: typeof currentUser.enabled === "boolean" ? currentUser.enabled : true,
-    createdAt: currentUser.createdAt ?? new Date().toISOString(),
-  });
+  const { name, value } = e.target;
+
+  if(name === "enabled"){
+    setCurrentUser({
+      ...currentUser,
+      enabled: value === "true",
+    });
+    return;
+  }else{
+    setCurrentUser({
+      ...currentUser,
+      [name]: value,
+    });
+  }  
  };
 
 
@@ -295,19 +222,23 @@ const handleDeleteUser = async (id: string) => {
     }
   }
 }
-
-
+// funcion de grabar usuario
 const handleSubmit = async (e: React.FormEvent) =>{
   e.preventDefault();
   if(!currentUser){
     return;
   }
   try{
-    if(currentUser.id){
+    console.log("Submitting user:", currentUser);
+
+    if (currentUser.id) {
+      // Update
+      console.log("Updating user:", currentUser);
       const updatedUser = await updateUser(currentUser.id,{
         fullname: currentUser.fullname,
         email: currentUser.email,
         role: currentUser.role,
+        enabled: currentUser.enabled,
         ...(currentUser.password ? {password : currentUser.password}: {})
       });
       if(updatedUser){
@@ -316,6 +247,8 @@ const handleSubmit = async (e: React.FormEvent) =>{
         throw new Error("No se pudo actualizar el usuario. Intenta de nuevo.");
       }
     } else {
+      // Create
+      console.log("Creating user:", currentUser);
       const newUser = await createUser({
         fullname: currentUser.fullname,
         email: currentUser.email,
@@ -323,7 +256,8 @@ const handleSubmit = async (e: React.FormEvent) =>{
         role: currentUser.role,
         enabled: currentUser.enabled,
         createdAt: currentUser.createdAt
-      })
+      });
+      console.log("createUser result:", newUser);
       if (newUser){
         setUsers([...users, newUser])
         await register(
@@ -332,7 +266,6 @@ const handleSubmit = async (e: React.FormEvent) =>{
           currentUser.password || "",
           currentUser.role || "",
           currentUser.enabled,
-          
         )
       }else{
         throw new Error("No se pudo crear el usuario. Intenta de nuevo.");
@@ -355,102 +288,10 @@ const userCounts = {
   cajero: Array.isArray(users) ? users.filter(user => user.role === ROLES.CAJERO).length : 0,
   almacenista: Array.isArray(users) ? users.filter(user => user.role === ROLES.ALMACENISTA).length : 0,
   propietario: Array.isArray(users) ? users.filter(user => user.role === ROLES.PROPIETARIO).length : 0,
+  usuario: Array.isArray(users) ? users.filter(user => user.role === ROLES.USER).length : 0,
 };
 
-  // if (!isAuthenticated) {
-  //   return null; // Redirect handled in useEffect
-  // }
-
-  // return (
-  //   <div className="container p-4">
-  //     <div className="d-flex justify-content-between align-items-center mb-4">
-  //       <h2 className="fw-bold">Gestión de Usuarios</h2>
-  //       <button
-  //         className="btn btn-success"
-  //         onClick={handleCreateUser}
-  //         disabled={loading}
-  //       >
-  //         <FontAwesomeIcon icon={faPlus} className="me-2" />
-  //         Crear Usuario
-  //       </button>
-  //     </div>
-
-  //     {loading && (
-  //       <div className="text-center p-4">
-  //         <FontAwesomeIcon icon={faSpinner} spin size="2x" />
-  //         <p className="mt-2">Cargando usuarios...</p>
-  //       </div>
-  //     )}
-
-  //     {error && (
-  //       <div className="alert alert-danger" role="alert">
-  //         {error}
-  //         <button className="btn btn-outline-danger btn-sm ms-3" onClick={()=> window.location.reload()}>
-  //           Reintentar
-  //         </button>
-  //       </div>
-  //     )}
-
-  //     {!loading && !error && (
-  //       <>
-  //         {users.length === 0 ? (
-  //           <div className="alert alert-info" role="alert">
-  //             No hay usuarios disponibles.
-  //           </div>
-  //         ) : (
-  //           <div className="table-responsive">
-  //             <table className="table table-striped table-hover">
-  //               <thead className="table-dark">
-  //                 <tr>
-  //                   <th scope="col">ID</th>
-  //                   <th scope="col">Nombre Completo</th>
-  //                   <th scope="col">Correo</th>
-  //                   <th scope="col">Rol</th>
-  //                   <th scope="col">Estado</th>
-  //                   <th scope="col">Creado</th>
-  //                 </tr>
-  //               </thead>
-  //               <tbody>                
-  //                 {users.map((u) => (
-  //                   console.log("UserManagement: Rendering user",{id: u.id, role: u.role, displayName: roleDisplayNames[u.role as keyof typeof roleDisplayNames]}),                  
-  //                   <tr key={u.id}>
-  //                     <td>{u.id}</td>
-  //                     <td>{u.fullname}</td>
-  //                     <td>{u.email}</td>
-  //                     <td>
-  //                       {typeof u.role === "string" && u.role in roleDisplayNames
-  //                         ? roleDisplayNames[u.role as keyof typeof roleDisplayNames]
-  //                         : `Rol desconocido (UUID: ${u.role || 'undefined'})`}
-  //                     </td>
-  //                     <td>
-  //                       <span
-  //                         className={`badge ${
-  //                           u.enabled ? "bg-success" : "bg-secondary"
-  //                         }`}
-  //                       >
-  //                         {u.enabled ? "Activo" : "Inactivo"}
-  //                       </span>
-  //                     </td>
-  //                     <td>
-  //                       {new Date(u.createdAt).toLocaleDateString("es-DO", {
-  //                         year: "numeric",
-  //                         month: "long",
-  //                         day: "numeric",
-  //                       })}
-  //                     </td>
-  //                   </tr>
-  //                 ))}
-  //               </tbody>
-  //             </table>
-  //           </div>
-  //         )}
-  //       </>
-  //     )}
-  //   </div>
-  // );
-
-
-  ///////////////test2////
+ 
   if (isloading && users.length === 0) {
     return (
       <div className="text-center p-5">
@@ -462,16 +303,6 @@ const userCounts = {
     )
   }
 
-  // if (error) {
-  //   return (
-  //     <div className="alert alert-danger" role="alert">
-  //       {error}
-  //       <button className="btn btn-outline-danger btn-sm ms-3" onClick={() => window.location.reload()}>
-  //         Reintentar
-  //       </button>
-  //     </div>
-  //   )
-  // }
    
   return (
     <div className="container-fluid px-0">
@@ -526,34 +357,47 @@ const userCounts = {
       )}
 
 <div className="mb-4">
-        <div className="btn-group" role="group" aria-label="Filtrar usuarios por rol">
+        <div className="nav nav-pills mb-3" role="tablist">
+          <li className="nav-item" role="presentation">
           <button
             type="button"
-            className={`btn ${activeTab === "all" ? "btn-secondary" : "btn-outline-secondary"}`}
+            className={`nav-link ${activeTab === "all" ? "active" : ""}`}
             onClick={() => setActiveTab("all")}
           >
             Todos <span className="badge bg-light text-dark ms-1">{userCounts.all}</span>
           </button>
+          </li>
+          <li className="nav-item" role="presentation">
           <button
             type="button"
-            className={`btn ${activeTab === roleDisplayNames.PROPIETARIO ? "btn-danger" : "btn-outline-danger"}`}
-            onClick={() => setActiveTab(roleDisplayNames.PROPIETARIO)}
+            className={`nav-link ${activeTab === 'propietarios' ? "active" : ""}`}
+            onClick={() => setActiveTab('propietarios')}
           >
             Propietarios <span className="badge bg-light text-dark ms-1">{userCounts.propietario}</span>
           </button>
+          </li>
+          <li className="nav-item" role="presentation">
           <button
             type="button"
-            className={`btn ${activeTab === roleDisplayNames.ADMIN ? "btn-primary" : "btn-outline-primary"}`}
-            onClick={() => setActiveTab(roleDisplayNames.ADMIN)}
+            className={`nav-link ${activeTab === 'administradores' ? "active" : ""}`}
+            onClick={() => setActiveTab('administradores')}
           >
             Administradores <span className="badge bg-light text-dark ms-1">{userCounts.admin}</span>
           </button>
+          </li>
           <button
             type="button"
-            className={`btn ${activeTab === roleDisplayNames.CAJERO ? "btn-secondary" : "btn-outline-secondary"}`}
-            onClick={() => setActiveTab(roleDisplayNames.CAJERO)}
+            className={`nav-link ${activeTab === 'cajeros' ? "active" : ""}`}
+            onClick={() => setActiveTab('cajeros')}
           >
             Cajeros <span className="badge bg-light text-dark ms-1">{userCounts.cajero}</span>
+          </button>
+          <button
+            type="button"
+            className={`nav-link ${activeTab === 'usuarios' ? "active" : ""}`}
+            onClick={() => setActiveTab('usuarios')}
+          >
+            Usuarios <span className="badge bg-light text-dark ms-1">{userCounts.usuario}</span>
           </button>
         </div>
       </div>
@@ -584,9 +428,7 @@ const userCounts = {
                     {getRoleConfig(mapUuidToRole(user.role ?? "")).label}
                     </span>
 
-                    {/* <span className={`badge bg-${roleConf?.badgeColor ?? "secondary"}`}>
-                      {roleConf?.label ?? ` (${user.role ?? "undefined"})`}
-                    </span> */}
+                   
 
                     </td>
                     {!compact && <td className="text-secondary">{user.createdAt || "-"}</td>}
@@ -690,9 +532,9 @@ const userCounts = {
                     <input
                       type="text"
                       className="form-control"
-                      id="name"
-                      name="name"
-                      value={currentUser?.fullname}
+                      id="fullname"
+                      name="fullname"
+                      value={currentUser?.fullname ?? ""}
                       onChange={handleInputChange}
                       required
                     />
@@ -753,14 +595,14 @@ const userCounts = {
                     </label>
                     <select
                       className="form-select"
-                      id="status"
-                      name="status"
-                      value={currentUser?.enabled ? "Activo" : "Inactivo"}
+                      id="enabled"
+                      name="enabled"
+                      value={currentUser?.enabled ? "true" : "false"}
                       onChange={handleInputChange}
                       required
                     >
-                      <option value="Activo">Activo</option>
-                      <option value="Inactivo">Inactivo</option>
+                      <option value="true">Activo</option>
+                      <option value="false">Inactivo</option>
                     </select>
                   </div>
                 </div>
